@@ -10,3 +10,5 @@ from hvicorn.models.server.warn import WarnPackage
 from hvicorn.models.server.whisper import WhisperPackage
 from hvicorn.models.server.update_message import UpdateMessagePackage
 from hvicorn.models.server.change_nick import ChangeNickPackage
+from hvicorn.models.server.captcha import CaptchaPackage
+from hvicorn.models.server.lockroom import LockroomPackage

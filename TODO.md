@@ -6,15 +6,16 @@
    - [x] plain info
    - [x] whisper
    - [x] invite
-   - [ ] captcha
-   - [ ] lockroom
+   - [x] captcha
+   - [x] lockroom
  - [x] onlineAdd
  - [x] onlineRemove
  - [x] onlineSet
  - [x] updateMessage
  - [x] updateUser
  - [x] warn
- - [ ] changenick
+ - [x] changenick
+Hooray, finished! (maybe)
 ## Send part
  - [ ] chat
    - [ ] editing

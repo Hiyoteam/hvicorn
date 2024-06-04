@@ -11,6 +11,6 @@ class ChatPackage(BaseModel):
     text: str
     time: int
     trip: Optional[str] = None
-    uType: Literal['user', 'mod', 'admin']
+    uType: Literal["user", "mod", "admin"]
     userid: int
     customId: Optional[str] = None

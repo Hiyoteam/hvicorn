@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+
+
 class ChangeNickPackage(BaseModel):
     old_nick: str
     new_nick: str

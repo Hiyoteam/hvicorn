@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Literal
 
+
 class UpdateMessagePackage(BaseModel):
     channel: str
     cmd: str

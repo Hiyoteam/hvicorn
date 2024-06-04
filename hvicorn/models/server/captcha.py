@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+
+
 class CaptchaPackage(BaseModel):
     channel: str
     cmd: str

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, Literal, List, Union
 
+
 class User(BaseModel):
     channel: str
     color: Union[str, bool]
@@ -10,8 +11,9 @@ class User(BaseModel):
     level: int
     nick: str
     trip: Optional[str] = None
-    uType: Literal['user', 'mod', 'admin']
+    uType: Literal["user", "mod", "admin"]
     userid: int
+
 
 class OnlineSetPackage(BaseModel):
     cmd: str

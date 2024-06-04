@@ -24,3 +24,5 @@ Hooray, finished! (maybe)
  - [ ] changenick
  - [ ] changecolor
  - [ ] invite
+## Coding
+ - [ ] docstrings 

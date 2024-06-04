@@ -20,7 +20,7 @@ Hooray, finished! (maybe)
  - [x] chat
    - [x] editing
  - [x] whisper
- - [ ] emote
+ - [x] emote
  - [ ] changenick
  - [ ] changecolor
  - [ ] invite

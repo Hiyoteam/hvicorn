@@ -21,8 +21,8 @@ Hooray, finished! (maybe)
    - [x] editing
  - [x] whisper
  - [x] emote
- - [ ] changenick
- - [ ] changecolor
- - [ ] invite
+ - [x] changenick
+ - [x] changecolor
+ - [x] invite
 ## Coding
  - [ ] docstrings 

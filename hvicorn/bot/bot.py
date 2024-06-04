@@ -9,6 +9,9 @@ from hvicorn.models.client import (
     UpdateMessageRequest,
     WhisperRequest,
     EmoteRequest,
+    ChangeColorRequest,
+    ChangeNickRequest,
+    InviteRequest
 )
 from hvicorn.models.server import (
     User,
@@ -20,7 +23,7 @@ from hvicorn.models.server import (
 )
 from json import loads, dumps
 from hvicorn.utils.generate_customid import generate_customid
-from hvicorn.utils.json_to_object import json_to_object
+from hvicorn.utils.json_to_object import json_to_object, verifyNick
 from time import sleep, time
 from traceback import format_exc
 from logging import debug
@@ -175,6 +178,17 @@ class Bot:
 
     def emote(self, text: str) -> None:
         self._send_model(EmoteRequest(text=text))
+    
+    def change_color(self, color: str = "reset") -> None:
+        self._send_model(ChangeColorRequest(color=color))
+    
+    def change_nick(self, nick: str) -> None:
+        if not verifyNick(nick):
+            raise ValueError("Invaild Nickname")
+        self._send_model(ChangeNickRequest(nick=nick))
+    
+    def invite(self, nick: str, channel: Optional[str] = None) -> None:
+        self._send_model(InviteRequest(nick=nick, to=channel))
 
     def on(self, event_type: Any = None) -> None:
         def wrapper(func: Callable):

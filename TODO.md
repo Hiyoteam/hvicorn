@@ -6,12 +6,12 @@
    - [x] plain info
    - [x] whisper
    - [x] invite
-   - [] captcha
-   - [] lockroom
+   - [ ] captcha
+   - [ ] lockroom
  - [x] onlineAdd
  - [x] onlineRemove
  - [x] onlineSet
  - [x] updateMessage
  - [x] updateUser
  - [x] warn
- - [] changenick
+ - [ ] changenick

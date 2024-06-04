@@ -9,3 +9,4 @@ from hvicorn.models.server.update_user import UpdateUserPackage
 from hvicorn.models.server.warn import WarnPackage
 from hvicorn.models.server.whisper import WhisperPackage
 from hvicorn.models.server.update_message import UpdateMessagePackage
+from hvicorn.models.server.change_nick import ChangeNickPackage

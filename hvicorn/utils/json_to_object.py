@@ -1,7 +1,16 @@
-from hvicorn.models.server import ChatPackage, EmotePackage, InfoPackage, InvitePackage, OnlineAddPackage, OnlineRemovePackage, OnlineSetPackage, UpdateUserPackage, WarnPackage, WhisperPackage, UpdateMessagePackage
+from hvicorn.models.server import ChatPackage, EmotePackage, InfoPackage, InvitePackage, OnlineAddPackage, OnlineRemovePackage, OnlineSetPackage, UpdateUserPackage, WarnPackage, WhisperPackage, UpdateMessagePackage, ChangeNickPackage
 from typing import Union
+import string
 
-def json_to_object(data: dict) -> Union[ChatPackage, EmotePackage, InfoPackage, InvitePackage, OnlineAddPackage, OnlineRemovePackage, OnlineSetPackage, UpdateUserPackage, WarnPackage, WhisperPackage, UpdateMessagePackage]:
+def verifyNick(nick: str) -> bool:
+    if len(nick) > 24:
+        return False
+    for char in nick:
+        if char not in string.ascii_letters+string.digits+"_":
+            return False
+    return True
+
+def json_to_object(data: dict) -> Union[ChatPackage, EmotePackage, InfoPackage, InvitePackage, OnlineAddPackage, OnlineRemovePackage, OnlineSetPackage, UpdateUserPackage, WarnPackage, WhisperPackage, UpdateMessagePackage, ChangeNickPackage]:
     if not data.get("cmd"):
         raise ValueError("No `cmd` provided")
     command=data.get("cmd")
@@ -12,6 +21,10 @@ def json_to_object(data: dict) -> Union[ChatPackage, EmotePackage, InfoPackage, 
         return EmotePackage(**data)
     elif command == "info":
         if not data.get("type"):
+            if data.get("text","").count(" ") == 3 and data.split(" ",1)[1].startswith("is now") and verifyNick(data.split(" ")[0]) and verifyNick(data.split(" ")[3]):
+                data["old_nick"]=data.split(" ")[0]
+                data["new_nick"]=data.split(" ")[3]
+                return ChangeNickPackage(**data)
             return InfoPackage(**data)
         elif data.get("type") == "whisper":
             data["nick"] = data["from"]

@@ -31,12 +31,14 @@ WS_ADDRESS = "wss://hack.chat/chat-ws"
 def threaded(func):
     def wrapper(*args, **kwargs):
         Thread(target=func, args=tuple(args), kwargs=kwargs).start()
+    return wrapper
 
 class CommandContext:
-    def __init__(self, bot: "Bot", triggered_by: User, triggered_via: Literal["chat", "whisper"]) -> None:
+    def __init__(self, bot: "Bot", triggered_by: User, triggered_via: Literal["chat", "whisper"], text: str) -> None:
         self.bot=bot
         self.triggered_by=triggered_by
         self.triggered_via=triggered_via
+        self.text=text
     def respond(self, text, at_sender=True):
         if self.triggered_via == "chat":
             self.bot.send_message(("@"+self.triggered_by.nick+" " if at_sender else "")+str(text))
@@ -101,17 +103,17 @@ class Bot:
             if self.get_user_by_nick(event.nick):
                 self.users.remove(self.get_user_by_nick(event.nick))
         if isinstance(event, ChatPackage):
-            for command in self.commands.items:
+            for command in self.commands.items():
                 if event.text.startswith(command[0]):
                     try:
-                        command[1](CommandContext(self, self.get_user_by_nick(event.nick), "chat"))
+                        command[1](CommandContext(self, self.get_user_by_nick(event.nick), "chat", event.text))
                     except:
                         warn(f"Ignoring exception in command: \n{format_exc()}")
         if isinstance(event, WhisperPackage):
-            for command in self.commands.items:
-                if event.text.startswith(command[0]):
+            for command in self.commands.items():
+                if event.content.startswith(command[0]):
                     try:
-                        command[1](CommandContext(self, self.get_user_by_nick(event.nick), "whisper"))
+                        command[1](CommandContext(self, self.get_user_by_nick(event.nick), "whisper", event.content))
                     except:
                         warn(f"Ignoring exception in command: \n{format_exc()}")
 

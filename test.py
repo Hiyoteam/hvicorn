@@ -1,4 +1,4 @@
-from hvicorn import Bot
+from hvicorn import Bot, CommandContext, threaded
 from hvicorn.models.server import ChatPackage
 from logging import basicConfig, DEBUG
 import time
@@ -9,6 +9,7 @@ my_bot = Bot("test_hvicorn", "lounge")
 
 
 @my_bot.startup
+@threaded
 def greetings(bot: Bot):
     message = bot.send_message("Hello world!", editable=True)
     time.sleep(5)
@@ -25,5 +26,9 @@ def on_chat(bot: Bot, msg: ChatPackage):
         bot.whisper(msg.nick, "Here's a *✨secret✨* message for you!")
         time.sleep(1)
         bot.emote(f"hugs {msg.nick}")
+
+@my_bot.command(".examplecommand")
+def examplecommand(ctx: CommandContext):
+    ctx.respond("Hello world")
 
 my_bot.run()

@@ -23,6 +23,7 @@ def on_chat(bot: Bot, msg: ChatPackage):
         )
         time.sleep(1)
         bot.whisper(msg.nick, "Here's a *✨secret✨* message for you!")
-
+        time.sleep(1)
+        bot.emote(f"hugs {msg.nick}")
 
 my_bot.run()

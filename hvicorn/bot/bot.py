@@ -8,6 +8,7 @@ from hvicorn.models.client import (
     Message,
     UpdateMessageRequest,
     WhisperRequest,
+    EmoteRequest,
 )
 from hvicorn.models.server import (
     User,
@@ -108,6 +109,9 @@ class Bot:
 
     def whisper(self, nick: str, text: str) -> None:
         self._send_model(WhisperRequest(nick=nick, text=text))
+
+    def emote(self, text: str) -> None:
+        self._send_model(EmoteRequest(text=text))
 
     def on(self, event_type: Any = None) -> None:
         def wrapper(func: Callable):

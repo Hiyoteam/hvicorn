@@ -13,7 +13,7 @@ from hvicorn.models.server import (
     ChangeNickPackage,
     CaptchaPackage,
     LockroomPackage,
-    WhisperSentPackage
+    WhisperSentPackage,
 )
 from typing import Union
 import string
@@ -45,7 +45,7 @@ def json_to_object(
     ChangeNickPackage,
     CaptchaPackage,
     LockroomPackage,
-    WhisperSentPackage
+    WhisperSentPackage,
 ]:
     if not data.get("cmd"):
         raise ValueError("No `cmd` provided")
@@ -73,7 +73,7 @@ def json_to_object(
                 return LockroomPackage(time=data["time"])
             return InfoPackage(**data)
         elif data.get("type") == "whisper":
-            if data.get("text","").startswith("You whispered to"):
+            if data.get("text", "").startswith("You whispered to"):
                 data["userid_from"] = data["from"]
                 data["userid_to"] = data["to"]
                 del data["from"]

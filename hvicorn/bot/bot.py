@@ -11,7 +11,7 @@ from hvicorn.models.client import (
     EmoteRequest,
     ChangeColorRequest,
     ChangeNickRequest,
-    InviteRequest
+    InviteRequest,
 )
 from hvicorn.models.server import (
     User,
@@ -178,15 +178,15 @@ class Bot:
 
     def emote(self, text: str) -> None:
         self._send_model(EmoteRequest(text=text))
-    
+
     def change_color(self, color: str = "reset") -> None:
         self._send_model(ChangeColorRequest(color=color))
-    
+
     def change_nick(self, nick: str) -> None:
         if not verifyNick(nick):
             raise ValueError("Invaild Nickname")
         self._send_model(ChangeNickRequest(nick=nick))
-    
+
     def invite(self, nick: str, channel: Optional[str] = None) -> None:
         self._send_model(InviteRequest(nick=nick, to=channel))
 

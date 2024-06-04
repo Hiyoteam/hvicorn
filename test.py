@@ -27,8 +27,10 @@ def on_chat(bot: Bot, msg: ChatPackage):
         time.sleep(1)
         bot.emote(f"hugs {msg.nick}")
 
+
 @my_bot.command(".examplecommand")
 def examplecommand(ctx: CommandContext):
     ctx.respond("Hello world")
+
 
 my_bot.run()

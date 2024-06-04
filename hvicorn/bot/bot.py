@@ -7,6 +7,7 @@ from hvicorn.models.client import (
     ChatRequest,
     Message,
     UpdateMessageRequest,
+    WhisperRequest,
 )
 from hvicorn.models.server import (
     User,
@@ -57,7 +58,7 @@ class Bot:
                 return user
         return None
 
-    def _internal_handler(self, bot: "Bot", event: BaseModel):
+    def _internal_handler(self, bot: "Bot", event: BaseModel) -> None:
         if isinstance(event, OnlineSetPackage):
             self.users = event.users
         elif isinstance(event, OnlineAddPackage):
@@ -105,7 +106,10 @@ class Bot:
         msg._edit = wrapper
         return msg
 
-    def on(self, event_type: Any = None):
+    def whisper(self, nick: str, text: str) -> None:
+        self._send_model(WhisperRequest(nick=nick, text=text))
+
+    def on(self, event_type: Any = None) -> None:
         def wrapper(func: Callable):
             if event_type is None:
                 self.global_functions.append(func)

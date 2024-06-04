@@ -21,6 +21,8 @@ def on_chat(bot: Bot, msg: ChatPackage):
         bot.send_message(
             f"Hey, @{msg.nick}, I see you awa-ing!\nHere's ur info(By hvicorn): {my_bot.get_user_by_nick(msg.nick)}"
         )
+        time.sleep(1)
+        bot.whisper(msg.nick, "Here's a *✨secret✨* message for you!")
 
 
 my_bot.run()

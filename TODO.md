@@ -17,8 +17,8 @@
  - [x] changenick
 Hooray, finished! (maybe)
 ## Send part
- - [ ] chat
-   - [ ] editing
+ - [x] chat
+   - [x] editing
  - [ ] whisper
  - [ ] emote
  - [ ] changenick

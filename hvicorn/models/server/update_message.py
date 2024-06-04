@@ -6,7 +6,7 @@ class UpdateMessagePackage(BaseModel):
     cmd: str
     customId: str
     level: int
-    mode: Literal["overwrite", "prepend", "append"]
+    mode: Literal["overwrite", "prepend", "append", "complete"]
     text: str
     time: int
     userid: int

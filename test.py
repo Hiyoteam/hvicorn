@@ -1,13 +1,20 @@
-from hvicorn.utils.json_to_object import json_to_object
-from traceback import print_exc
-from rich import print as prettyprint
-import json, websocket
-ws=websocket.create_connection("wss://hack.chat/chat-ws")
-ws.send(json.dumps({"cmd":"join","channel":"lounge","nick":"hvicorn_testing"}))
-while 1:
-    data=json.loads(ws.recv())
-    try:
-        prettyprint(json_to_object(data))
-    except:
-        print_exc()
-        prettyprint(data)
+from hvicorn import Bot
+from hvicorn.models.server import ChatPackage
+from logging import basicConfig, DEBUG
+import time
+
+basicConfig(level=DEBUG)
+
+my_bot=Bot("test_hvicorn", "lounge")
+@my_bot.startup
+def greetings(bot: Bot):
+    message = bot.send_message("Hello world!", editable=True)
+    time.sleep(5)
+    message.append("And everyone!")
+
+@my_bot.on(ChatPackage)
+def on_chat(bot:Bot, msg: ChatPackage):
+    if "awa" in msg.text:
+        bot.send_message(f"Hey, @{msg.nick}, I see you awa-ing!")
+
+my_bot.run()

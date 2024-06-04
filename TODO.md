@@ -15,3 +15,11 @@
  - [x] updateUser
  - [x] warn
  - [ ] changenick
+## Send part
+ - [ ] chat
+   - [ ] editing
+ - [ ] whisper
+ - [ ] emote
+ - [ ] changenick
+ - [ ] changecolor
+ - [ ] invite

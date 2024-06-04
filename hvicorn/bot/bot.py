@@ -15,16 +15,35 @@ from hvicorn.models.server import (
     OnlineSetPackage,
     OnlineAddPackage,
     OnlineRemovePackage,
+    ChatPackage,
+    WhisperPackage
 )
 from json import loads, dumps
 from hvicorn.utils.generate_customid import generate_customid
 from hvicorn.utils.json_to_object import json_to_object
-from time import sleep
+from time import sleep, time
 from traceback import format_exc
 from logging import debug
+from threading import Thread
 
 WS_ADDRESS = "wss://hack.chat/chat-ws"
 
+def threaded(func):
+    def wrapper(*args, **kwargs):
+        Thread(target=func, args=tuple(args), kwargs=kwargs).start()
+
+class CommandContext:
+    def __init__(self, bot: "Bot", triggered_by: User, triggered_via: Literal["chat", "whisper"]) -> None:
+        self.bot=bot
+        self.triggered_by=triggered_by
+        self.triggered_via=triggered_via
+    def respond(self, text, at_sender=True):
+        if self.triggered_via == "chat":
+            self.bot.send_message(("@"+self.triggered_by.nick+" " if at_sender else "")+str(text))
+        elif self.triggered_via == "whisper":
+            self.bot.whisper(self.triggered_by.nick, text)
+        else:
+            warn("Unknown trigger method, ignoring")
 
 class Bot:
     def __init__(self, nick: str, channel: str, password: Optional[str] = None) -> None:
@@ -37,6 +56,7 @@ class Bot:
         self.global_functions: List[Callable] = [self._internal_handler]
         self.killed: bool = False
         self.users: List[User] = []
+        self.commands: Dict[str, Callable] = {}
 
     def _send_model(self, model: BaseModel) -> None:
         try:
@@ -80,6 +100,20 @@ class Bot:
         elif isinstance(event, OnlineRemovePackage):
             if self.get_user_by_nick(event.nick):
                 self.users.remove(self.get_user_by_nick(event.nick))
+        if isinstance(event, ChatPackage):
+            for command in self.commands.items:
+                if event.text.startswith(command[0]):
+                    try:
+                        command[1](CommandContext(self, self.get_user_by_nick(event.nick), "chat"))
+                    except:
+                        warn(f"Ignoring exception in command: \n{format_exc()}")
+        if isinstance(event, WhisperPackage):
+            for command in self.commands.items:
+                if event.text.startswith(command[0]):
+                    try:
+                        command[1](CommandContext(self, self.get_user_by_nick(event.nick), "whisper"))
+                    except:
+                        warn(f"Ignoring exception in command: \n{format_exc()}")
 
     def _connect(self) -> None:
         self.websocket = create_connection(WS_ADDRESS)
@@ -132,6 +166,11 @@ class Bot:
         self.startup_functions.append(function)
         debug(f"Added startup function: {function}")
         return None
+    
+    def command(self, prefix: str) -> None:
+        def wrapper(func: Callable):
+            self.commands[prefix]=func
+        return wrapper
 
     def kill(self) -> None:
         self.killed = True

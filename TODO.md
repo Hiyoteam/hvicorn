@@ -19,7 +19,7 @@ Hooray, finished! (maybe)
 ## Send part
  - [x] chat
    - [x] editing
- - [ ] whisper
+ - [x] whisper
  - [ ] emote
  - [ ] changenick
  - [ ] changecolor

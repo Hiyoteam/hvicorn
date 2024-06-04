@@ -12,3 +12,4 @@ from hvicorn.models.server.update_message import UpdateMessagePackage
 from hvicorn.models.server.change_nick import ChangeNickPackage
 from hvicorn.models.server.captcha import CaptchaPackage
 from hvicorn.models.server.lockroom import LockroomPackage
+from hvicorn.models.server.whisper_sent import WhisperSentPackage

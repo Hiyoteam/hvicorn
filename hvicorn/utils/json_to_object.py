@@ -13,6 +13,7 @@ from hvicorn.models.server import (
     ChangeNickPackage,
     CaptchaPackage,
     LockroomPackage,
+    WhisperSentPackage
 )
 from typing import Union
 import string
@@ -44,6 +45,7 @@ def json_to_object(
     ChangeNickPackage,
     CaptchaPackage,
     LockroomPackage,
+    WhisperSentPackage
 ]:
     if not data.get("cmd"):
         raise ValueError("No `cmd` provided")
@@ -71,12 +73,20 @@ def json_to_object(
                 return LockroomPackage(time=data["time"])
             return InfoPackage(**data)
         elif data.get("type") == "whisper":
-            data["nick"] = data["from"]
-            data["userid_to"] = data["to"]
-            del data["from"]
-            del data["to"]
-            data["content"] = data["text"].split(": ", 1)[1]
-            return WhisperPackage(**data)
+            if data.get("text","").startswith("You whispered to"):
+                data["userid_from"] = data["from"]
+                data["userid_to"] = data["to"]
+                del data["from"]
+                del data["to"]
+                data["content"] = data["text"].split(": ", 1)[1]
+                return WhisperSentPackage(**data)
+            else:
+                data["nick"] = data["from"]
+                data["userid_to"] = data["to"]
+                del data["from"]
+                del data["to"]
+                data["content"] = data["text"].split(": ", 1)[1]
+                return WhisperPackage(**data)
         elif data.get("type") == "invite":
             data["from_nick"] = data["from"]
             data["to_userid"] = data["to"]

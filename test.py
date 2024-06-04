@@ -18,7 +18,9 @@ def greetings(bot: Bot):
 @my_bot.on(ChatPackage)
 def on_chat(bot: Bot, msg: ChatPackage):
     if "awa" in msg.text:
-        bot.send_message(f"Hey, @{msg.nick}, I see you awa-ing!")
+        bot.send_message(
+            f"Hey, @{msg.nick}, I see you awa-ing!\nHere's ur info(By hvicorn): {my_bot.get_user_by_nick(msg.nick)}"
+        )
 
 
 my_bot.run()

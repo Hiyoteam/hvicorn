@@ -8,6 +8,12 @@ from hvicorn.models.client import (
     Message,
     UpdateMessageRequest,
 )
+from hvicorn.models.server import (
+    User,
+    OnlineSetPackage,
+    OnlineAddPackage,
+    OnlineRemovePackage,
+)
 from json import loads, dumps
 from hvicorn.utils.generate_customid import generate_customid
 from hvicorn.utils.json_to_object import json_to_object
@@ -26,8 +32,9 @@ class Bot:
         self.websocket: Optional[WebSocket] = None
         self.startup_functions: List[Callable] = []
         self.event_functions: Dict[Any, List[Callable]] = {}
-        self.global_functions: List[Callable] = []
+        self.global_functions: List[Callable] = [self._internal_handler]
         self.killed: bool = False
+        self.users: List[User] = []
 
     def _send_model(self, model: BaseModel) -> None:
         try:
@@ -43,6 +50,34 @@ class Bot:
             self.websocket.send(dumps(payload))
         else:
             warn(f"Websocket isn't open, ignoring: {model}")
+
+    def get_user_by_nick(self, nick: str) -> Optional[User]:
+        for user in self.users:
+            if user.nick == nick:
+                return user
+        return None
+
+    def _internal_handler(self, bot: "Bot", event: BaseModel):
+        if isinstance(event, OnlineSetPackage):
+            self.users = event.users
+        elif isinstance(event, OnlineAddPackage):
+            self.users.append(
+                User(
+                    channel=event.channel,
+                    color=event.color,
+                    hash=event.hash,
+                    isBot=event.isBot,
+                    isme=False,
+                    level=event.level,
+                    nick=event.nick,
+                    trip=event.trip,
+                    uType=event.uType,
+                    userid=event.userid,
+                )
+            )
+        elif isinstance(event, OnlineRemovePackage):
+            if self.get_user_by_nick(event.nick):
+                self.users.remove(self.get_user_by_nick(event.nick))
 
     def _connect(self) -> None:
         self.websocket = create_connection(WS_ADDRESS)

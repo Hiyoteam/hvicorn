@@ -196,15 +196,13 @@ class Bot:
     def on(self, event_type: Any = None) -> None:
         def wrapper(func: Callable):
             if event_type is None:
-                self.global_functions.append(func)
-                debug(f"Added global handler {func}")
+                event_type = "__GLOBAL__"
+            if event_type in self.event_functions.keys():
+                self.event_functions[event_type].append(func)
+                debug(f"Added handler for {event_type}: {func}")
             else:
-                if event_type in self.event_functions.keys():
-                    self.event_functions[event_type].append(func)
-                    debug(f"Added handler for {event_type}: {func}")
-                else:
-                    self.event_functions[event_type] = [func]
-                    debug(f"Set handler for {event_type} to {func}")
+                self.event_functions[event_type] = [func]
+                debug(f"Set handler for {event_type} to {func}")
 
         return wrapper
 

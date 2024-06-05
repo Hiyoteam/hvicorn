@@ -2,9 +2,7 @@ from hvicorn import Bot, CommandContext, threaded
 from hvicorn.models.server import ChatPackage
 from logging import basicConfig, DEBUG
 import time, random
-import _thread
 import traceback
-import rich
 
 basicConfig(level=DEBUG)
 

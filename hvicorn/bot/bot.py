@@ -7,7 +7,7 @@ from hvicorn.models.server import *
 from json import loads, dumps
 from hvicorn.utils.generate_customid import generate_customid
 from hvicorn.utils.json_to_object import json_to_object, verifyNick
-from time import sleep, time
+from time import sleep
 from traceback import format_exc
 from logging import debug
 from threading import Thread

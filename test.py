@@ -67,7 +67,7 @@ def execute(ctx: CommandContext):
     if ctx.sender.trip != owner_trip:
         return ctx.respond("I wouldn't do that...")
     try:
-        exec(ctx.text.split(" ", 1)[1], globals())
+        exec(ctx.text.split(" ", 2)[2], globals())
     except:
         traceback.print_exc()
     return ctx.respond("Done! check console!")

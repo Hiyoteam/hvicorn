@@ -59,7 +59,7 @@ def json_to_object(
         if not data.get("type"):
             if (
                 data.get("text", "").count(" ") == 3
-                and data.get("text","").split(" ", 1)[1].startswith("is now")
+                and data.get("text", "").split(" ", 1)[1].startswith("is now")
                 and verifyNick(data.get("text", "").split()[0])
                 and verifyNick(data.get("text", "").split()[3])
             ):

@@ -11,6 +11,7 @@ basicConfig(level=DEBUG)
 my_bot = Bot("test_hvicorn", "lounge")
 owner_trip = "2ZQ3+0"
 
+
 @my_bot.startup
 @threaded
 def greetings(bot: Bot):
@@ -59,13 +60,14 @@ def threading(ctx: CommandContext):
     time.sleep(10)
     ctx.respond("I'm back!")
 
+
 @my_bot.command(".hv exec")
 @threaded
 def execute(ctx: CommandContext):
     if ctx.sender.trip != owner_trip:
         return ctx.respond("I wouldn't do that...")
     try:
-        exec(ctx.text.split(" ",1)[1], globals())
+        exec(ctx.text.split(" ", 1)[1], globals())
     except:
         traceback.print_exc()
     return ctx.respond("Done! check console!")

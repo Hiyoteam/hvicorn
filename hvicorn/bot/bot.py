@@ -75,23 +75,33 @@ class Bot:
         else:
             warn(f"Websocket isn't open, ignoring: {model}")
 
-    def get_user(self, by: Literal["nick", "hash", "trip", "color","isBot","level","uType","userid"], matches: str) -> Optional[User]:
+    def get_user(
+        self,
+        by: Literal[
+            "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid"
+        ],
+        matches: str,
+    ) -> Optional[User]:
         for user in self.users:
             if user.__dict__.get(by) == matches:
                 return user
         return None
-    
-    def get_users(self, by: Literal["nick", "hash", "trip", "color","isBot","level","uType","userid"], matches: str) -> List[User]:
+
+    def get_users(
+        self,
+        by: Literal[
+            "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid"
+        ],
+        matches: str,
+    ) -> List[User]:
         results = []
         for user in self.users:
             if user.__dict__.get(by) == matches:
                 results.append(user)
         return results
-            
-    
+
     def get_user_by_nick(self, nick: str) -> Optional[User]:
         return self.get_user("nick", nick)
-    
 
     def _internal_handler(self, bot: "Bot", event: BaseModel) -> None:
         if isinstance(event, OnlineSetPackage):
@@ -147,7 +157,7 @@ class Bot:
         self.websocket = create_connection(WS_ADDRESS)
         while not self.websocket.connected:
             sleep(1)
-    
+
     def _run_events(self, event_type: Any, args: list):
         for function in self.event_functions.get(event_type, []):
             try:

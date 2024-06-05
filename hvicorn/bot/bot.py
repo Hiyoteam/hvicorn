@@ -41,7 +41,7 @@ class CommandContext:
                 ("@" + self.sender.nick + " " if at_sender else "") + str(text)
             )
         elif self.triggered_via == "whisper":
-            self.bot.whisper(self.triggered_by.nick, text)
+            self.bot.whisper(self.sender.nick, text)
         else:
             warn("Unknown trigger method, ignoring")
 

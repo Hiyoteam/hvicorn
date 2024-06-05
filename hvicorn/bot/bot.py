@@ -205,6 +205,7 @@ class Bot:
 
     def on(self, event_type: Any = None) -> None:
         def wrapper(func: Callable):
+            nonlocal event_type
             if event_type is None:
                 event_type = "__GLOBAL__"
             if event_type in self.event_functions.keys():

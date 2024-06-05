@@ -1,5 +1,4 @@
-from hvicorn import Bot, CommandContext, threaded
-from hvicorn.models.server import ChatPackage
+from hvicorn import Bot, CommandContext, threaded, ChatPackage
 from logging import basicConfig, DEBUG
 import time, random
 import traceback

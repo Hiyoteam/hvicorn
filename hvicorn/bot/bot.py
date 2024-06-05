@@ -242,22 +242,24 @@ class Bot:
         while not self.killed:
             package = self.websocket.recv()
             if not package:
+                debug("Killed")
                 self.killed = True
                 break
-            package = loads(self.websocket.recv())
+            package = loads(package)
             try:
                 event = json_to_object(package)
             except Exception as e:
+                debug(e)
                 warn(
                     f"Failed to parse event, ignoring: {package} cause exception: \n{format_exc()}"
                 )
                 continue
-            debug(f"Get event {str(event)[:10]}..., type: {type(event)}")
+            debug(f"Got event {type(event)}::{str(event)}")
             try:
                 if event.nick == self.nick and ignore_self:
                     debug("Found self.nick, ignoring")
                     continue
             except:
-                pass
+                debug("No nick provided in event, passing loopcheck")
             self._run_events("__GLOBAL__", [self, event])
             self._run_events(type(event), [self, event])

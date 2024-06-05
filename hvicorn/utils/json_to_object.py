@@ -59,12 +59,12 @@ def json_to_object(
         if not data.get("type"):
             if (
                 data.get("text", "").count(" ") == 3
-                and data.split(" ", 1)[1].startswith("is now")
-                and verifyNick(data.split(" ")[0])
-                and verifyNick(data.split(" ")[3])
+                and data.get("text","").split(" ", 1)[1].startswith("is now")
+                and verifyNick(data.get("text", "").split()[0])
+                and verifyNick(data.get("text", "").split()[3])
             ):
-                data["old_nick"] = data.split(" ")[0]
-                data["new_nick"] = data.split(" ")[3]
+                data["old_nick"] = data.get("text", "").split(" ")[0]
+                data["new_nick"] = data.get("text", "").split(" ")[3]
                 return ChangeNickPackage(**data)
             elif (
                 data.get("text", "")

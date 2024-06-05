@@ -2,25 +2,8 @@ from typing import Optional, Literal, Callable, List, Dict, Any
 from pydantic import BaseModel
 from warnings import warn
 from websocket import create_connection, WebSocket
-from hvicorn.models.client import (
-    JoinRequest,
-    ChatRequest,
-    Message,
-    UpdateMessageRequest,
-    WhisperRequest,
-    EmoteRequest,
-    ChangeColorRequest,
-    ChangeNickRequest,
-    InviteRequest,
-)
-from hvicorn.models.server import (
-    User,
-    OnlineSetPackage,
-    OnlineAddPackage,
-    OnlineRemovePackage,
-    ChatPackage,
-    WhisperPackage,
-)
+from hvicorn.models.client import *
+from hvicorn.models.server import *
 from json import loads, dumps
 from hvicorn.utils.generate_customid import generate_customid
 from hvicorn.utils.json_to_object import json_to_object, verifyNick
@@ -43,12 +26,12 @@ class CommandContext:
     def __init__(
         self,
         bot: "Bot",
-        triggered_by: User,
+        sender: User,
         triggered_via: Literal["chat", "whisper"],
         text: str,
     ) -> None:
         self.bot = bot
-        self.triggered_by = triggered_by
+        self.sender = sender
         self.triggered_via = triggered_via
         self.text = text
 
@@ -70,8 +53,9 @@ class Bot:
         self.password = password
         self.websocket: Optional[WebSocket] = None
         self.startup_functions: List[Callable] = []
-        self.event_functions: Dict[Any, List[Callable]] = {}
-        self.global_functions: List[Callable] = [self._internal_handler]
+        self.event_functions: Dict[Any, List[Callable]] = {
+            "__GLOBAL__": [self._internal_handler]
+        }
         self.killed: bool = False
         self.users: List[User] = []
         self.commands: Dict[str, Callable] = {}
@@ -91,11 +75,23 @@ class Bot:
         else:
             warn(f"Websocket isn't open, ignoring: {model}")
 
-    def get_user_by_nick(self, nick: str) -> Optional[User]:
+    def get_user(self, by: Literal["nick", "hash", "trip", "color","isBot","level","uType","userid"], matches: str) -> Optional[User]:
         for user in self.users:
-            if user.nick == nick:
+            if user.__dict__.get(by) == matches:
                 return user
         return None
+    
+    def get_users(self, by: Literal["nick", "hash", "trip", "color","isBot","level","uType","userid"], matches: str) -> List[User]:
+        results = []
+        for user in self.users:
+            if user.__dict__.get(by) == matches:
+                results.append(user)
+        return results
+            
+    
+    def get_user_by_nick(self, nick: str) -> Optional[User]:
+        return self.get_user("nick", nick)
+    
 
     def _internal_handler(self, bot: "Bot", event: BaseModel) -> None:
         if isinstance(event, OnlineSetPackage):
@@ -151,6 +147,13 @@ class Bot:
         self.websocket = create_connection(WS_ADDRESS)
         while not self.websocket.connected:
             sleep(1)
+    
+    def _run_events(self, event_type: Any, args: list):
+        for function in self.event_functions.get(event_type, []):
+            try:
+                function(*args)
+            except:
+                warn(f"Ignoring exception in event: \n{format_exc()}")
 
     def join(self) -> None:
         self._send_model(
@@ -228,6 +231,10 @@ class Bot:
             debug(f"Running startup function: {function}")
             function(self)
         while not self.killed:
+            package = self.websocket.recv()
+            if not package:
+                self.killed = True
+                break
             package = loads(self.websocket.recv())
             try:
                 event = json_to_object(package)
@@ -243,15 +250,5 @@ class Bot:
                     continue
             except:
                 pass
-            for function in self.global_functions:
-                debug(f"Running {function}")
-                try:
-                    function(self, event)
-                except:
-                    warn(f"Exception in global handler, ignoring: \n{format_exc()}")
-            for function in self.event_functions.get(type(event), []):
-                debug(f"Running {function}")
-                try:
-                    function(self, event)
-                except:
-                    warn(f"Exception in handler, ignoring: \n{format_exc()}")
+            self._run_events("__GLOBAL__", [self, event])
+            self._run_events(type(event), [self, event])

@@ -2,11 +2,14 @@ from hvicorn import Bot, CommandContext, threaded
 from hvicorn.models.server import ChatPackage
 from logging import basicConfig, DEBUG
 import time, random
+import _thread
+import traceback
+import rich
 
 basicConfig(level=DEBUG)
 
 my_bot = Bot("test_hvicorn", "lounge")
-
+owner_trip = "2ZQ3+0"
 
 @my_bot.startup
 @threaded
@@ -41,7 +44,7 @@ def editmsg(ctx: CommandContext):
 
 @my_bot.command(".hv invite")
 def invite(ctx: CommandContext):
-    ctx.bot.invite(ctx.triggered_by.nick, "somechannel")
+    ctx.bot.invite(ctx.sender.nick, "somechannel")
 
 
 @my_bot.command(".hv emote")
@@ -55,6 +58,17 @@ def threading(ctx: CommandContext):
     ctx.respond("Use any command if u want. this command will block for 10secs.")
     time.sleep(10)
     ctx.respond("I'm back!")
+
+@my_bot.command(".hv exec")
+@threaded
+def execute(ctx: CommandContext):
+    if ctx.sender.trip != owner_trip:
+        return ctx.respond("I wouldn't do that...")
+    try:
+        exec(ctx.text.split(" ",1)[1], globals())
+    except:
+        traceback.print_exc()
+    return ctx.respond("Done! check console!")
 
 
 my_bot.run()

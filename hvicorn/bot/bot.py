@@ -38,7 +38,7 @@ class CommandContext:
     def respond(self, text, at_sender=True):
         if self.triggered_via == "chat":
             self.bot.send_message(
-                ("@" + self.triggered_by.nick + " " if at_sender else "") + str(text)
+                ("@" + self.sender.nick + " " if at_sender else "") + str(text)
             )
         elif self.triggered_via == "whisper":
             self.bot.whisper(self.triggered_by.nick, text)

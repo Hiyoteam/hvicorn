@@ -7,12 +7,15 @@
 [查看在 VS Code 中的 Hinting](hinting.gif)
 
 # 快速开始
-下载hvicorn源代码，放入您的项目文件夹（TODO: 从PyPI安装）。
+使用pip安装hvicorn.
+```sh
+$ pip3 install hvicorn
+```
 接下来，我们将创建一个对"Ping"消息响应"Pong"的机器人。
 
 ```python
 import hvicorn
-from hvicorn.models.server import ChatPackage
+from hvicorn import ChatPackage
 
 bot = hvicorn.Bot(nick="PingPongBot", channel="lounge")
 

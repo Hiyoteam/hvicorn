@@ -232,6 +232,25 @@ class Bot:
         self.killed = True
         debug("Killing ws")
         self.websocket.close()
+    
+    def load_plugin(self, plugin_name: str, *args, **kwargs) -> None:
+        try:
+            plugin = __import__(plugin_name)
+        except ImportError:
+            warn(f"Failed to load plugin {plugin_name}, ignoring")
+            return
+        if "plugin_init" not in dir(plugin):
+            warn(f"Failed to find init function of plugin {plugin_name}, ignoring")
+            return
+        if not callable(plugin.plugin_init):
+            warn(f"Init function of plugin {plugin_name} isn't callable, ignoring")
+            return
+        try:
+            plugin.plugin_init(self, *args, **kwargs)
+        except:
+            warn(f"Failed to init plugin {plugin_name}: \n{format_exc()}")
+            return
+        debug(f"Loaded plugin {plugin_name}")
 
     def run(self, ignore_self: bool = True) -> None:
         self._connect()

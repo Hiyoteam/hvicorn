@@ -13,7 +13,7 @@ owner_trip = "2ZQ3+0"
 @threaded
 def greetings(bot: Bot):
     bot.send_message(
-        "Hello world! I am hvicorn demo bot.\nCommands:\n\t`.hv editmsg` - demos updatemessage.\n\t`.hv invite` - demos inviting.\n\t`.hv emote` - demos emote.\n\t`.hv threading` - demos multithreading.\n\t`.hv plugin` - test plugin.\nSpecial command: try sending awa"
+        "Hello world! I am hvicorn demo bot.\nCommands:\n\t`.hv editmsg` - demos updatemessage.\n\t`.hv invite` - demos inviting.\n\t`.hv emote` - demos emote.\n\t`.hv threading` - demos multithreading.\n\t`.hv plugin` - test plugin.\n\t`.hv afk` - a test plugin again, but it can mark you as AfKing.\nSpecial command: try sending awa"
     )
 
 
@@ -70,5 +70,6 @@ def execute(ctx: CommandContext):
     return ctx.respond("Done! check console!")
 
 my_bot.load_plugin("testplugin", command_name=".hv plugin")
+my_bot.load_plugin("example_plugin_afk", command_prefix=".hv afk")
 
 my_bot.run()

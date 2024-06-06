@@ -1,6 +1,5 @@
-from typing import Optional, Literal, Callable, List, Dict, Any
+from typing import Optional, Literal, Callable, List, Dict, Any, Union
 from pydantic import BaseModel
-from warnings import warn
 from websocket import create_connection, WebSocket
 from hvicorn.models.client import *
 from hvicorn.models.server import *
@@ -9,7 +8,7 @@ from hvicorn.utils.generate_customid import generate_customid
 from hvicorn.utils.json_to_object import json_to_object, verifyNick
 from time import sleep
 from traceback import format_exc
-from logging import debug
+from logging import debug, warn
 from threading import Thread
 
 WS_ADDRESS = "wss://hack.chat/chat-ws"
@@ -29,11 +28,15 @@ class CommandContext:
         sender: User,
         triggered_via: Literal["chat", "whisper"],
         text: str,
+        args: str,
+        event: Union[WhisperPackage, ChatPackage]
     ) -> None:
         self.bot = bot
         self.sender = sender
         self.triggered_via = triggered_via
         self.text = text
+        self.args = args
+        self.event = event
 
     def respond(self, text, at_sender=True):
         if self.triggered_via == "chat":
@@ -134,6 +137,8 @@ class Bot:
                                 self.get_user_by_nick(event.nick),
                                 "chat",
                                 event.text,
+                                event.text.replace(command[0], "", 1).lstrip(),
+                                event
                             )
                         )
                     except:
@@ -148,6 +153,8 @@ class Bot:
                                 self.get_user_by_nick(event.nick),
                                 "whisper",
                                 event.content,
+                                event.content.replace(command[0], "", 1).lstrip(),
+                                event
                             )
                         )
                     except:
@@ -237,18 +244,18 @@ class Bot:
         try:
             plugin = __import__(plugin_name)
         except ImportError:
-            warn(f"Failed to load plugin {plugin_name}, ignoring")
+            debug(f"Failed to load plugin {plugin_name}, ignoring")
             return
         if "plugin_init" not in dir(plugin):
-            warn(f"Failed to find init function of plugin {plugin_name}, ignoring")
+            debug(f"Failed to find init function of plugin {plugin_name}, ignoring")
             return
         if not callable(plugin.plugin_init):
-            warn(f"Init function of plugin {plugin_name} isn't callable, ignoring")
+            debug(f"Init function of plugin {plugin_name} isn't callable, ignoring")
             return
         try:
             plugin.plugin_init(self, *args, **kwargs)
         except:
-            warn(f"Failed to init plugin {plugin_name}: \n{format_exc()}")
+            debug(f"Failed to init plugin {plugin_name}: \n{format_exc()}")
             return
         debug(f"Loaded plugin {plugin_name}")
 

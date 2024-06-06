@@ -29,7 +29,7 @@ class CommandContext:
         triggered_via: Literal["chat", "whisper"],
         text: str,
         args: str,
-        event: Union[WhisperPackage, ChatPackage]
+        event: Union[WhisperPackage, ChatPackage],
     ) -> None:
         self.bot = bot
         self.sender = sender
@@ -138,7 +138,7 @@ class Bot:
                                 "chat",
                                 event.text,
                                 event.text.replace(command[0], "", 1).lstrip(),
-                                event
+                                event,
                             )
                         )
                     except:
@@ -154,7 +154,7 @@ class Bot:
                                 "whisper",
                                 event.content,
                                 event.content.replace(command[0], "", 1).lstrip(),
-                                event
+                                event,
                             )
                         )
                     except:
@@ -239,8 +239,14 @@ class Bot:
         self.killed = True
         debug("Killing ws")
         self.websocket.close()
-    
-    def load_plugin(self, plugin_name: str, init_function: Optional[Callable] = None, *args, **kwargs) -> None:
+
+    def load_plugin(
+        self,
+        plugin_name: str,
+        init_function: Optional[Callable] = None,
+        *args,
+        **kwargs,
+    ) -> None:
         if not init_function:
             try:
                 plugin = __import__(plugin_name)
@@ -263,7 +269,7 @@ class Bot:
                 init_function(self, *args, **kwargs)
             except:
                 debug(f"Failed to init plugin {plugin_name}: \n{format_exc()}")
-            
+
         debug(f"Loaded plugin {plugin_name}")
 
     def run(self, ignore_self: bool = True) -> None:

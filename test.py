@@ -69,6 +69,7 @@ def execute(ctx: CommandContext):
         traceback.print_exc()
     return ctx.respond("Done! check console!")
 
+
 my_bot.load_plugin("testplugin", command_name=".hv plugin")
 my_bot.load_plugin("example_plugin_afk", command_prefix=".hv afk")
 

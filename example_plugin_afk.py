@@ -23,7 +23,7 @@ def plugin_init(
         return ctx.respond(on_afk)
 
     @bot.on()
-    def back_check(bot: hvicorn.Bot, event):
+    def back_check(event):
         if "nick" not in dir(event):
             return
         if "text" in dir(event) and event.text.startswith(command_prefix):
@@ -33,7 +33,7 @@ def plugin_init(
             return bot.send_message(f"@{event.nick} {welcome_back}")
 
     @bot.on(hvicorn.ChatPackage)
-    def on_chat(bot: hvicorn.Bot, event: hvicorn.ChatPackage):
+    def on_chat(event: hvicorn.ChatPackage):
         for user in afked_users.items():
             if f"@{user[0]}" in event.text:
                 bot.send_message(

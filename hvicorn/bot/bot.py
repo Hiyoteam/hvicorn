@@ -106,7 +106,7 @@ class Bot:
     def get_user_by_nick(self, nick: str) -> Optional[User]:
         return self.get_user("nick", nick)
 
-    def _internal_handler(self, bot: "Bot", event: BaseModel) -> None:
+    def _internal_handler(self, event: BaseModel) -> None:
         if isinstance(event, OnlineSetPackage):
             self.users = event.users
         elif isinstance(event, OnlineAddPackage):
@@ -277,7 +277,7 @@ class Bot:
         self.join()
         for function in self.startup_functions:
             debug(f"Running startup function: {function}")
-            function(self)
+            function()
         while not self.killed:
             package = self.websocket.recv()
             if not package:
@@ -300,5 +300,5 @@ class Bot:
                     continue
             except:
                 debug("No nick provided in event, passing loopcheck")
-            self._run_events("__GLOBAL__", [self, event])
-            self._run_events(type(event), [self, event])
+            self._run_events("__GLOBAL__", [event])
+            self._run_events(type(event), [event])

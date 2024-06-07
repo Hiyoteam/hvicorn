@@ -21,7 +21,7 @@ def greetings():
 def on_chat(msg: ChatPackage):
     if "awa" in msg.text:
         bot.send_message(
-            f"Hey, @{msg.nick}, I see you awa-ing!\nHere's ur info(By hvicorn): {my_bot.get_user_by_nick(msg.nick)}"
+            f"Hey, @{msg.nick}, I see you awa-ing!\nHere's ur info(By hvicorn): {bot.get_user_by_nick(msg.nick)}"
         )
         time.sleep(1)
         bot.whisper(msg.nick, "Here's a *✨secret✨* message for you!")

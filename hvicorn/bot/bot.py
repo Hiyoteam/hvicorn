@@ -78,18 +78,6 @@ class Bot:
         else:
             warn(f"Websocket isn't open, ignoring: {model}")
 
-    def get_user_by(
-        self,
-        by: Literal[
-            "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid"
-        ],
-        matches: str,
-    ) -> Optional[User]:
-        for user in self.users:
-            if user.__dict__.get(by) == matches:
-                return user
-        return None
-
     def get_users_by(
         self,
         by: Literal[
@@ -102,6 +90,16 @@ class Bot:
             if user.__dict__.get(by) == matches:
                 results.append(user)
         return results
+    
+    def get_user_by(
+        self,
+        by: Literal[
+            "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid"
+        ],
+        matches: str,
+    ) -> Optional[User]:
+        result=self.get_users_by(by, matches)
+        return result[0] if result else None
 
     def get_user_by_nick(self, nick: str) -> Optional[User]:
         return self.get_user("nick", nick)

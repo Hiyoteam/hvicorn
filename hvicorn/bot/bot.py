@@ -235,6 +235,21 @@ class Bot:
 
         return wrapper
 
+    def register_event_function(self, event_type: Any, function: Callable):
+        if event_type in self.event_functions.keys():
+            self.event_functions[event_type].append(function)
+            debug(f"Added handler for {event_type}: {function}")
+        else:
+            self.event_functions[event_type] = [function]
+            debug(f"Set handler for {event_type} to {function}")
+
+    def register_global_function(self, function: Callable):
+        self.register_event_function("__GLOBAL__", function)
+
+    def register_startup_function(self, function: Callable):
+        self.startup_functions.append(function)
+        debug(f"Added startup function: {function}")
+
     def kill(self) -> None:
         self.killed = True
         debug("Killing ws")

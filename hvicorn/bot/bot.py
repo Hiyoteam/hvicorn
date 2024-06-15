@@ -78,7 +78,7 @@ class Bot:
         else:
             warn(f"Websocket isn't open, ignoring: {model}")
 
-    def get_user(
+    def get_user_by(
         self,
         by: Literal[
             "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid"
@@ -90,7 +90,7 @@ class Bot:
                 return user
         return None
 
-    def get_users(
+    def get_users_by(
         self,
         by: Literal[
             "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid"

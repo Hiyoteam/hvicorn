@@ -15,13 +15,12 @@ $ pip3 install hvicorn
 
 ```python
 import hvicorn
-from hvicorn import ChatPackage
 
 bot = hvicorn.Bot(nick="PingPongBot", channel="lounge")
 
-@bot.on(ChatPackage)
-def on_chat(bot: hvicorn.Bot, message: ChatPackage):
-    bot.send_message(f"@{message.nick} Pong!")
+@bot.command("Ping")
+def pong(ctx: hvicorn.CommandContext):
+    return ctx.respond("Pong!")
 
 bot.run()
 ```

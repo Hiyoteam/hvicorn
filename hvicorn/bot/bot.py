@@ -81,22 +81,26 @@ class Bot:
     def get_users_by(
         self,
         by: Literal[
-            "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid"
+            "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid", "function"
         ],
-        matches: str,
+        matches: Union[str, Callable],
     ) -> List[User]:
         results = []
         for user in self.users:
-            if user.__dict__.get(by) == matches:
-                results.append(user)
+            if by != "function":
+                if user.__dict__.get(by) == matches:
+                    results.append(user)
+            else:
+                if matches(user):
+                    results.append(user)
         return results
     
     def get_user_by(
         self,
         by: Literal[
-            "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid"
+            "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid", "function"
         ],
-        matches: str,
+        matches: Union[str, Callable],
     ) -> Optional[User]:
         result=self.get_users_by(by, matches)
         return result[0] if result else None

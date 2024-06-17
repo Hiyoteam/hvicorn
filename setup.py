@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="hvicorn",
-    version="0.0.4",
+    version="0.0.5",
     description="Something for creating webapps like uvicorn, But for online chatrooms...",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",

@@ -59,6 +59,7 @@ class Bot:
         self.event_functions: Dict[Any, List[Callable]] = {
             "__GLOBAL__": [self._internal_handler]
         }
+        self.wsopt: Dict = {}
         self.killed: bool = False
         self.users: List[User] = []
         self.commands: Dict[str, Callable] = {}
@@ -81,7 +82,15 @@ class Bot:
     def get_users_by(
         self,
         by: Literal[
-            "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid", "function"
+            "nick",
+            "hash",
+            "trip",
+            "color",
+            "isBot",
+            "level",
+            "uType",
+            "userid",
+            "function",
         ],
         matches: Union[str, Callable],
     ) -> List[User]:
@@ -94,19 +103,27 @@ class Bot:
                 if matches(user):
                     results.append(user)
         return results
-    
+
     def get_user_by(
         self,
         by: Literal[
-            "nick", "hash", "trip", "color", "isBot", "level", "uType", "userid", "function"
+            "nick",
+            "hash",
+            "trip",
+            "color",
+            "isBot",
+            "level",
+            "uType",
+            "userid",
+            "function",
         ],
         matches: Union[str, Callable],
     ) -> Optional[User]:
-        result=self.get_users_by(by, matches)
+        result = self.get_users_by(by, matches)
         return result[0] if result else None
 
     def get_user_by_nick(self, nick: str) -> Optional[User]:
-        return self.get_user("nick", nick)
+        return self.get_user_by("nick", nick)
 
     def _internal_handler(self, event: BaseModel) -> None:
         if isinstance(event, OnlineSetPackage):
@@ -163,7 +180,9 @@ class Bot:
                         warn(f"Ignoring exception in command: \n{format_exc()}")
 
     def _connect(self) -> None:
-        self.websocket = create_connection(WS_ADDRESS)
+        debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")
+        self.websocket = create_connection(WS_ADDRESS, **self.wsopt)
+        debug(f"Connected!")
         while not self.websocket.connected:
             sleep(1)
 
@@ -175,23 +194,22 @@ class Bot:
                 warn(f"Ignoring exception in event: \n{format_exc()}")
 
     def join(self) -> None:
+        debug(f"Sending join package")
         self._send_model(
             JoinRequest(nick=self.nick, channel=self.channel, password=self.password)
         )
         sleep(1)
+        debug(f"Done!")
 
     def send_message(self, text, editable=False) -> Message:
         customId = generate_customid() if editable else None
         self._send_model(ChatRequest(text=text, customId=customId))
 
-        def wrapper(
-            mode: Literal["overwrite", "prepend", "append", "complete"], text: str
-        ):
-            self._send_model(
-                UpdateMessageRequest(customId=msg.customId, mode=mode, text=text)
-            )
-
         msg = Message(text, customId)
+
+        def wrapper(*args, **kwargs):
+            self._send_model(msg._generate_edit_request(*args, **kwargs))
+
         msg._edit = wrapper
         return msg
 
@@ -289,7 +307,8 @@ class Bot:
 
         debug(f"Loaded plugin {plugin_name}")
 
-    def run(self, ignore_self: bool = True) -> None:
+    def run(self, ignore_self: bool = True, wsopt: Dict = {}) -> None:
+        self.wsopt = wsopt if wsopt != {} else self.wsopt
         self._connect()
         self.join()
         for function in self.startup_functions:

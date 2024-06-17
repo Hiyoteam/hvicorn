@@ -9,10 +9,16 @@ class Message:
         self.customId = customId
         self.editable = customId != None
 
-    def _edit(
+    def _generate_edit_request(
         self, mode: Literal["overwrite", "prepend", "append", "complete"], text: str
     ):
+        if not self.editable:
+            raise SyntaxError("This message isn't editable.")
         return UpdateMessageRequest(customId=self.customId, mode=mode, text=text)
+
+    def _edit(
+        self, mode: Literal["overwrite", "prepend", "append", "complete"], text: str
+    ) -> None: ...
 
     def edit(self, text):
         return self._edit("overwrite", text)

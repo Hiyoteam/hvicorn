@@ -73,4 +73,4 @@ def execute(ctx: CommandContext):
 bot.load_plugin("testplugin", command_name=".hv plugin")
 bot.load_plugin("example_plugin_afk", command_prefix=".hv afk")
 
-bot.run(wsopt={"http_proxy_host": "127.0.0.1", "http_proxy_port": 1087}) # delete wsopt if you don't have to use a proxy
+bot.run()

@@ -21,17 +21,29 @@ class Message:
     ) -> None: ...
 
     def edit(self, text):
+        self.text=text
         return self._edit("overwrite", text)
 
     def prepend(self, text):
+        self.text=text+self.text
         return self._edit("prepend", text)
 
     def append(self, text):
+        self.text+=text
         return self._edit("append", text)
 
     def complete(self):
         self.editable = False
         return UpdateMessageRequest(customId=self.customId, mode="complete")
+    
+    def __add__(self, string: str):
+        self.append(string)
+        return self.text
+    
+    def __radd__(self, string: str):
+        self.prepend(string)
+        return self.text
+
 
 
 class ChatRequest(BaseModel):

@@ -34,10 +34,8 @@ def on_chat(msg: ChatPackage):
 def editmsg(ctx: CommandContext):
     msg = ctx.bot.send_message("Do you like playing ", editable=True)
     time.sleep(5)
-    msg.append(
-        random.choice(["Genshin impact", "Honkai impact", "Minecraft", "Project sekai"])
-        + "?"
-    )
+    choice = random.choice(["Genshin impact", "Honkai impact", "Minecraft", "Project sekai"]) + "?"
+    msg + choice # this will update the message!
 
 
 @bot.command(".hv invite")

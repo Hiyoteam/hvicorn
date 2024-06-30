@@ -31,12 +31,12 @@ class CommandContext:
         args: str,
         event: Union[WhisperPackage, ChatPackage],
     ) -> None:
-        self.bot = bot
-        self.sender = sender
-        self.triggered_via = triggered_via
-        self.text = text
-        self.args = args
-        self.event = event
+        self.bot: "Bot" = bot
+        self.sender: User = sender
+        self.triggered_via: Literal["chat", "whisper"] = triggered_via
+        self.text: str = text
+        self.args: str = args
+        self.event: Union[WhisperPackage, ChatPackage] = event
 
     def respond(self, text, at_sender=True):
         if self.triggered_via == "chat":

@@ -14,7 +14,6 @@ def plugin_init(
     welcome_back: str = "Welcome back.",
 ):
 
-    @bot.command(command_prefix)
     def mark_afk(ctx: hvicorn.CommandContext):
         reason = ctx.args if ctx.args else None
         if ctx.sender.nick in afked_users.keys():
@@ -22,7 +21,6 @@ def plugin_init(
         afked_users.update({ctx.sender.nick: reason})
         return ctx.respond(on_afk)
 
-    @bot.on()
     def back_check(event):
         if "nick" not in dir(event):
             return
@@ -32,7 +30,6 @@ def plugin_init(
             del afked_users[event.nick]
             return bot.send_message(f"@{event.nick} {welcome_back}")
 
-    @bot.on(hvicorn.ChatPackage)
     def on_chat(event: hvicorn.ChatPackage):
         for user in afked_users.items():
             if f"@{user[0]}" in event.text:
@@ -41,5 +38,9 @@ def plugin_init(
                     + (" " + reason.format(reason=user[1]) if user[1] else "")
                 )
                 return  # only processes the first
+    
+    bot.register_command(command_prefix, mark_afk)
+    bot.register_global_function(back_check)
+    bot.register_event_function(hvicorn.ChatPackage, on_chat)
     
     

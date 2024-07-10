@@ -252,6 +252,8 @@ class Bot:
 
     def command(self, prefix: str) -> None:
         def wrapper(func: Callable):
+            if prefix in self.commands.keys():
+                warn(f"Overriding function {self.commands[prefix]} for command prefix {prefix}")
             self.commands[prefix] = func
 
         return wrapper
@@ -270,6 +272,11 @@ class Bot:
     def register_startup_function(self, function: Callable):
         self.startup_functions.append(function)
         debug(f"Added startup function: {function}")
+    
+    def register_command(self, prefix: str, function: Callable):
+        if prefix in self.commands.keys():
+            warn(f"Overriding function {self.commands[prefix]} for command prefix {prefix}")
+        self.commands[prefix] = function
 
     def kill(self) -> None:
         self.killed = True

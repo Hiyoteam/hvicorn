@@ -41,3 +41,5 @@ def plugin_init(
                     + (" " + reason.format(reason=user[1]) if user[1] else "")
                 )
                 return  # only processes the first
+    
+    

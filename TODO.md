@@ -25,4 +25,4 @@ Hooray, finished! (maybe)
  - [x] changecolor
  - [x] invite
 ## Coding
- - [ ] docstrings 
+ - [x] docstrings (not gonna do bcs my english sucks)

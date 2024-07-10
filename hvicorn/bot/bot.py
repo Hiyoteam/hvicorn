@@ -15,6 +15,7 @@ WS_ADDRESS = "wss://hack.chat/chat-ws"
 
 
 def threaded(func):
+    
     def wrapper(*args, **kwargs):
         Thread(target=func, args=tuple(args), kwargs=kwargs).start()
 

@@ -2,13 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="hvicorn",
-    version="0.0.5",
+    version="0.0.6",
     description="Something for creating webapps like uvicorn, But for online chatrooms...",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Hiyoteam/hvicorn",
     author="0x24a",
-    author_email="admin@thz.cool",
+    author_email="miku399993@gmail.com",
     license="MIT",
     classifiers=[
         "Development Status :: 3 - Alpha",

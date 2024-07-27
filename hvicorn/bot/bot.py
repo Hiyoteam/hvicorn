@@ -11,6 +11,7 @@ from time import sleep
 from traceback import format_exc
 from logging import debug, warn
 from threading import Thread
+import ssl
 
 WS_ADDRESS = "wss://hack.chat/chat-ws"
 
@@ -186,7 +187,11 @@ class Bot:
 
     def _connect(self) -> None:
         debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")
-        self.websocket = create_connection(WS_ADDRESS, **self.wsopt)
+        if WS_ADDRESS == "wss://hack.chat/chat-ws":
+            debug(f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws")
+            self.websocket = create_connection("wss://104.131.138.176/chat-ws", host="hack.chat", sslopt={"cert_reqs":ssl.CERT_NONE}, **self.wsopt)
+        else:
+            self.websocket = create_connection(WS_ADDRESS, **self.wsopt)
         debug(f"Connected!")
         while not self.websocket.connected:
             sleep(1)

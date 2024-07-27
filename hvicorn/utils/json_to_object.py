@@ -14,7 +14,7 @@ from hvicorn.models.server import (
     CaptchaPackage,
     LockroomPackage,
     WhisperSentPackage,
-    UncatchedPackage
+    UncatchedPackage,
 )
 from typing import Union
 import string
@@ -47,7 +47,7 @@ def json_to_object(
     CaptchaPackage,
     LockroomPackage,
     WhisperSentPackage,
-    UncatchedPackage
+    UncatchedPackage,
 ]:
     if not data.get("cmd"):
         raise ValueError("No `cmd` provided")

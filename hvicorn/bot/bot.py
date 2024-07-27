@@ -17,7 +17,7 @@ WS_ADDRESS = "wss://hack.chat/chat-ws"
 
 
 def threaded(func):
-    
+
     def wrapper(*args, **kwargs):
         Thread(target=func, args=tuple(args), kwargs=kwargs).start()
 
@@ -188,8 +188,15 @@ class Bot:
     def _connect(self) -> None:
         debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")
         if WS_ADDRESS == "wss://hack.chat/chat-ws":
-            debug(f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws")
-            self.websocket = create_connection("wss://104.131.138.176/chat-ws", host="hack.chat", sslopt={"cert_reqs":ssl.CERT_NONE}, **self.wsopt)
+            debug(
+                f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws"
+            )
+            self.websocket = create_connection(
+                "wss://104.131.138.176/chat-ws",
+                host="hack.chat",
+                sslopt={"cert_reqs": ssl.CERT_NONE},
+                **self.wsopt,
+            )
         else:
             self.websocket = create_connection(WS_ADDRESS, **self.wsopt)
         debug(f"Connected!")
@@ -262,7 +269,9 @@ class Bot:
     def command(self, prefix: str) -> None:
         def wrapper(func: Callable):
             if prefix in self.commands.keys():
-                warn(f"Overriding function {self.commands[prefix]} for command prefix {prefix}")
+                warn(
+                    f"Overriding function {self.commands[prefix]} for command prefix {prefix}"
+                )
             self.commands[prefix] = func
 
         return wrapper
@@ -281,10 +290,12 @@ class Bot:
     def register_startup_function(self, function: Callable):
         self.startup_functions.append(function)
         debug(f"Added startup function: {function}")
-    
+
     def register_command(self, prefix: str, function: Callable):
         if prefix in self.commands.keys():
-            warn(f"Overriding function {self.commands[prefix]} for command prefix {prefix}")
+            warn(
+                f"Overriding function {self.commands[prefix]} for command prefix {prefix}"
+            )
         self.commands[prefix] = function
 
     def kill(self) -> None:

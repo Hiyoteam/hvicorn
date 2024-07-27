@@ -38,9 +38,7 @@ def plugin_init(
                     + (" " + reason.format(reason=user[1]) if user[1] else "")
                 )
                 return  # only processes the first
-    
+
     bot.register_command(command_prefix, mark_afk)
     bot.register_global_function(back_check)
     bot.register_event_function(hvicorn.ChatPackage, on_chat)
-    
-    

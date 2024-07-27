@@ -6,6 +6,7 @@ from hvicorn.models.server import *
 from json import loads, dumps
 from hvicorn.utils.generate_customid import generate_customid
 from hvicorn.utils.json_to_object import json_to_object, verifyNick
+from hvicorn.models.client import CustomRequest
 from time import sleep
 from traceback import format_exc
 from logging import debug, warn
@@ -66,14 +67,17 @@ class Bot:
         self.commands: Dict[str, Callable] = {}
 
     def _send_model(self, model: BaseModel) -> None:
-        try:
-            data = model.model_dump()
-        except:
-            warn(f"Cannot stringify model, ignoring: {model}")
-        payload = {}
-        for k, v in data.items():
-            if v != None:
-                payload.update({k: v})
+        if type(model) == CustomRequest:
+            payload = model.json
+        else:
+            try:
+                data = model.model_dump()
+            except:
+                warn(f"Cannot stringify model, ignoring: {model}")
+            payload = {}
+            for k, v in data.items():
+                if v != None:
+                    payload.update({k: v})
         if self.websocket:
             debug(f"Sent payload: {payload}")
             self.websocket.send(dumps(payload))

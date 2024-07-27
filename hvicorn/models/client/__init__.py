@@ -6,3 +6,4 @@ from hvicorn.models.client.emote import EmoteRequest
 from hvicorn.models.client.changecolor import ChangeColorRequest
 from hvicorn.models.client.changenick import ChangeNickRequest
 from hvicorn.models.client.invite import InviteRequest
+from hvicorn.models.client.custom import CustomRequest

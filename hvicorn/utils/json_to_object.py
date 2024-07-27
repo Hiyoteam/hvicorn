@@ -14,6 +14,7 @@ from hvicorn.models.server import (
     CaptchaPackage,
     LockroomPackage,
     WhisperSentPackage,
+    UncatchedPackage
 )
 from typing import Union
 import string
@@ -46,6 +47,7 @@ def json_to_object(
     CaptchaPackage,
     LockroomPackage,
     WhisperSentPackage,
+    UncatchedPackage
 ]:
     if not data.get("cmd"):
         raise ValueError("No `cmd` provided")
@@ -108,4 +110,4 @@ def json_to_object(
     elif command == "warn":
         return WarnPackage(**data)
     else:
-        raise ValueError("Unknown package type")
+        return UncatchedPackage(json=data)

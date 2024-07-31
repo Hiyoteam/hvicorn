@@ -1,5 +1,4 @@
 import hvicorn
-import time
 
 afked_users = {}
 

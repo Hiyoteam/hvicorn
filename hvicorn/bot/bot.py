@@ -69,7 +69,7 @@ class Bot:
 
     def _send_model(self, model: BaseModel) -> None:
         if type(model) == CustomRequest:
-            payload = model.json
+            payload = model.rawjson
         else:
             try:
                 data = model.model_dump()

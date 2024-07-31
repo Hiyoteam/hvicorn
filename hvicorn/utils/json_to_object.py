@@ -110,4 +110,4 @@ def json_to_object(
     elif command == "warn":
         return WarnPackage(**data)
     else:
-        return UncatchedPackage(json=data)
+        return UncatchedPackage(rawjson=data)

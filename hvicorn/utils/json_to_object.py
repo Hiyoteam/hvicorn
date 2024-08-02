@@ -15,6 +15,7 @@ from hvicorn.models.server import (
     LockroomPackage,
     WhisperSentPackage,
     UncatchedPackage,
+    RateLimitedPackage,
 )
 from typing import Union
 import string
@@ -27,6 +28,15 @@ def verifyNick(nick: str) -> bool:
         if char not in string.ascii_letters + string.digits + "_":
             return False
     return True
+
+
+RL_MAPPING = {
+    "You are joining channels too fast. Wait a moment and try again.": "CHANNEL_RL",
+    "You are changing colors too fast. Wait a moment before trying again.": "COLOR_RL",
+    "You are changing nicknames too fast. Wait a moment before trying again.": "CHANGENICK_RL",
+    "You are sending too much text. Wait a moment and try again.\nPress the up arrow key to restore your last message.": "MESSAGE_RL",
+    "You are rate-limited or blocked.": "GLOBAL_RL",
+}
 
 
 def json_to_object(
@@ -108,6 +118,17 @@ def json_to_object(
     elif command == "captcha":
         return CaptchaPackage(**data)
     elif command == "warn":
+        if data.get("text") in [
+            "You are joining channels too fast. Wait a moment and try again.",
+            "You are changing colors too fast. Wait a moment before trying again.",
+            "You are sending invites too fast. Wait a moment before trying again.",
+            "You are changing nicknames too fast. Wait a moment before trying again.",
+            "You are sending too much text. Wait a moment and try again.\nPress the up arrow key to restore your last message.",
+            "You are rate-limited or blocked.",
+        ]:
+            return RateLimitedPackage(
+                type=RL_MAPPING[data.get("text")], text=data.get("text")
+            )
         return WarnPackage(**data)
     else:
         return UncatchedPackage(rawjson=data)

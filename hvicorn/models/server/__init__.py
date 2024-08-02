@@ -14,3 +14,4 @@ from hvicorn.models.server.captcha import CaptchaPackage
 from hvicorn.models.server.lockroom import LockroomPackage
 from hvicorn.models.server.whisper_sent import WhisperSentPackage
 from hvicorn.models.server.uncatched import UncatchedPackage
+from hvicorn.models.server.ratelimited import RateLimitedPackage

@@ -23,5 +23,6 @@ setup(
         "websocket-client==1.8.0",
         "pydantic==2.7.3",
         "setuptools==70.0.0",
+        "websockets==12.0",
     ],
 )

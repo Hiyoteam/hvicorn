@@ -1,63 +1,54 @@
+import asyncio
+import websockets
+import ssl
 from typing import Optional, Literal, Callable, List, Dict, Any, Union
 from pydantic import BaseModel
-from websocket import create_connection, WebSocket
 from hvicorn.models.client import *
 from hvicorn.models.server import *
 from json import loads, dumps
 from hvicorn.utils.generate_customid import generate_customid
 from hvicorn.utils.json_to_object import json_to_object, verifyNick
 from hvicorn.models.client import CustomRequest
-from time import sleep
 from traceback import format_exc
 from logging import debug, warn
-from threading import Thread
-import ssl
 
 WS_ADDRESS = "wss://hack.chat/chat-ws"
-
-
-def threaded(func):
-
-    def wrapper(*args, **kwargs):
-        Thread(target=func, args=tuple(args), kwargs=kwargs).start()
-
-    return wrapper
 
 
 class CommandContext:
     def __init__(
         self,
-        bot: "Bot",
+        bot: "AsyncBot",
         sender: User,
         triggered_via: Literal["chat", "whisper"],
         text: str,
         args: str,
         event: Union[WhisperPackage, ChatPackage],
     ) -> None:
-        self.bot: "Bot" = bot
+        self.bot: "AsyncBot" = bot
         self.sender: User = sender
         self.triggered_via: Literal["chat", "whisper"] = triggered_via
         self.text: str = text
         self.args: str = args
         self.event: Union[WhisperPackage, ChatPackage] = event
 
-    def respond(self, text, at_sender=True):
+    async def respond(self, text, at_sender=True):
         if self.triggered_via == "chat":
-            self.bot.send_message(
+            await self.bot.send_message(
                 ("@" + self.sender.nick + " " if at_sender else "") + str(text)
             )
         elif self.triggered_via == "whisper":
-            self.bot.whisper(self.sender.nick, text)
+            await self.bot.whisper(self.sender.nick, text)
         else:
             warn("Unknown trigger method, ignoring")
 
 
-class Bot:
+class AsyncBot:
     def __init__(self, nick: str, channel: str, password: Optional[str] = None) -> None:
         self.nick = nick
         self.channel = channel
         self.password = password
-        self.websocket: Optional[WebSocket] = None
+        self.websocket: Optional[websockets.WebSocketClientProtocol] = None
         self.startup_functions: List[Callable] = []
         self.event_functions: Dict[Any, List[Callable]] = {
             "__GLOBAL__": [self._internal_handler]
@@ -67,7 +58,7 @@ class Bot:
         self.users: List[User] = []
         self.commands: Dict[str, Callable] = {}
 
-    def _send_model(self, model: BaseModel) -> None:
+    async def _send_model(self, model: BaseModel) -> None:
         if type(model) == CustomRequest:
             payload = model.rawjson
         else:
@@ -81,7 +72,7 @@ class Bot:
                     payload.update({k: v})
         if self.websocket:
             debug(f"Sent payload: {payload}")
-            self.websocket.send(dumps(payload))
+            await self.websocket.send(dumps(payload))
         else:
             warn(f"Websocket isn't open, ignoring: {model}")
 
@@ -131,7 +122,7 @@ class Bot:
     def get_user_by_nick(self, nick: str) -> Optional[User]:
         return self.get_user_by("nick", nick)
 
-    def _internal_handler(self, event: BaseModel) -> None:
+    async def _internal_handler(self, event: BaseModel) -> None:
         if isinstance(event, OnlineSetPackage):
             self.users = event.users
         elif isinstance(event, OnlineAddPackage):
@@ -156,7 +147,7 @@ class Bot:
             for command in self.commands.items():
                 if event.text.startswith(command[0]):
                     try:
-                        command[1](
+                        await command[1](
                             CommandContext(
                                 self,
                                 self.get_user_by_nick(event.nick),
@@ -172,7 +163,7 @@ class Bot:
             for command in self.commands.items():
                 if event.content.startswith(command[0]):
                     try:
-                        command[1](
+                        await command[1](
                             CommandContext(
                                 self,
                                 self.get_user_by_nick(event.nick),
@@ -185,67 +176,68 @@ class Bot:
                     except:
                         warn(f"Ignoring exception in command: \n{format_exc()}")
 
-    def _connect(self) -> None:
+    async def _connect(self) -> None:
         debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")
         if WS_ADDRESS == "wss://hack.chat/chat-ws":
             debug(
                 f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws"
             )
-            self.websocket = create_connection(
+            self.websocket = await websockets.connect(
                 "wss://104.131.138.176/chat-ws",
-                host="hack.chat",
-                sslopt={"cert_reqs": ssl.CERT_NONE},
+                extra_headers={"Host": "hack.chat"},
+                ssl=ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
                 **self.wsopt,
             )
         else:
-            self.websocket = create_connection(WS_ADDRESS, **self.wsopt)
+            self.websocket = await websockets.connect(WS_ADDRESS, **self.wsopt)
         debug(f"Connected!")
-        while not self.websocket.connected:
-            sleep(1)
 
-    def _run_events(self, event_type: Any, args: list):
+    async def _run_events(self, event_type: Any, args: list):
         for function in self.event_functions.get(event_type, []):
             try:
-                function(*args)
+                if asyncio.iscoroutinefunction(function):
+                    await function(*args)
+                else:
+                    function(*args)
             except:
                 warn(f"Ignoring exception in event: \n{format_exc()}")
 
-    def join(self) -> None:
+    async def join(self) -> None:
         debug(f"Sending join package")
-        self._send_model(
+        await self._send_model(
             JoinRequest(nick=self.nick, channel=self.channel, password=self.password)
         )
-        sleep(1)
+        await asyncio.sleep(1)
         debug(f"Done!")
 
-    def send_message(self, text, editable=False) -> Message:
+    async def send_message(self, text, editable=False) -> Message:
         customId = generate_customid() if editable else None
-        self._send_model(ChatRequest(text=text, customId=customId))
+        await self._send_model(ChatRequest(text=text, customId=customId))
 
         msg = Message(text, customId)
 
-        def wrapper(*args, **kwargs):
-            self._send_model(msg._generate_edit_request(*args, **kwargs))
+        async def wrapper(*args, **kwargs):
+            await self._send_model(msg._generate_edit_request(*args, **kwargs))
 
         msg._edit = wrapper
         return msg
 
-    def whisper(self, nick: str, text: str) -> None:
-        self._send_model(WhisperRequest(nick=nick, text=text))
+    async def whisper(self, nick: str, text: str) -> None:
+        await self._send_model(WhisperRequest(nick=nick, text=text))
 
-    def emote(self, text: str) -> None:
-        self._send_model(EmoteRequest(text=text))
+    async def emote(self, text: str) -> None:
+        await self._send_model(EmoteRequest(text=text))
 
-    def change_color(self, color: str = "reset") -> None:
-        self._send_model(ChangeColorRequest(color=color))
+    async def change_color(self, color: str = "reset") -> None:
+        await self._send_model(ChangeColorRequest(color=color))
 
-    def change_nick(self, nick: str) -> None:
+    async def change_nick(self, nick: str) -> None:
         if not verifyNick(nick):
-            raise ValueError("Invaild Nickname")
-        self._send_model(ChangeNickRequest(nick=nick))
+            raise ValueError("Invalid Nickname")
+        await self._send_model(ChangeNickRequest(nick=nick))
 
-    def invite(self, nick: str, channel: Optional[str] = None) -> None:
-        self._send_model(InviteRequest(nick=nick, to=channel))
+    async def invite(self, nick: str, channel: Optional[str] = None) -> None:
+        await self._send_model(InviteRequest(nick=nick, to=channel))
 
     def on(self, event_type: Any = None) -> None:
         def wrapper(func: Callable):
@@ -301,13 +293,13 @@ class Bot:
     def kill(self) -> None:
         self.killed = True
         debug("Killing ws")
-        self.websocket.close()
+        asyncio.create_task(self.websocket.close())
 
-    def close_ws(self) -> None:
+    async def close_ws(self) -> None:
         debug("Closing ws")
-        self.websocket.close()
+        await self.websocket.close()
 
-    def load_plugin(
+    async def load_plugin(
         self,
         plugin_name: str,
         init_function: Optional[Callable] = None,
@@ -327,27 +319,41 @@ class Bot:
                 debug(f"Init function of plugin {plugin_name} isn't callable, ignoring")
                 return
             try:
-                plugin.plugin_init(self, *args, **kwargs)
+                if asyncio.iscoroutinefunction(plugin.plugin_init):
+                    await plugin.plugin_init(self, *args, **kwargs)
+                else:
+                    plugin.plugin_init(self, *args, **kwargs)
             except:
                 debug(f"Failed to init plugin {plugin_name}: \n{format_exc()}")
                 return
         else:
             try:
-                init_function(self, *args, **kwargs)
+                if asyncio.iscoroutinefunction(init_function):
+                    await init_function(self, *args, **kwargs)
+                else:
+                    init_function(self, *args, **kwargs)
             except:
                 debug(f"Failed to init plugin {plugin_name}: \n{format_exc()}")
 
         debug(f"Loaded plugin {plugin_name}")
 
-    def run(self, ignore_self: bool = True, wsopt: Dict = {}) -> None:
+    async def run(self, ignore_self: bool = True, wsopt: Dict = {}) -> None:
         self.wsopt = wsopt if wsopt != {} else self.wsopt
-        self._connect()
-        self.join()
+        await self._connect()
+        await self.join()
         for function in self.startup_functions:
             debug(f"Running startup function: {function}")
-            function()
+            if asyncio.iscoroutinefunction(function):
+                await function()
+            else:
+                function()
         while not self.killed:
-            package = self.websocket.recv()
+            try:
+                package = await self.websocket.recv()
+            except websockets.ConnectionClosed:
+                debug("Connection closed")
+                self.killed = True
+                break
             if not package:
                 debug("Killed")
                 self.killed = True
@@ -368,5 +374,5 @@ class Bot:
                     continue
             except:
                 debug("No nick provided in event, passing loopcheck")
-            self._run_events("__GLOBAL__", [event])
-            self._run_events(type(event), [event])
+            await self._run_events("__GLOBAL__", [event])
+            await self._run_events(type(event), [event])

@@ -58,7 +58,7 @@ def json_to_object(
     LockroomPackage,
     WhisperSentPackage,
     UncatchedPackage,
-    RateLimitedPackage
+    RateLimitedPackage,
 ]:
     if not data.get("cmd"):
         raise ValueError("No `cmd` provided")

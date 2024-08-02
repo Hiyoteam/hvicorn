@@ -15,7 +15,7 @@ from logging import debug, warn
 WS_ADDRESS = "wss://hack.chat/chat-ws"
 
 
-class CommandContext:
+class AsyncCommandContext:
     def __init__(
         self,
         bot: "AsyncBot",
@@ -148,7 +148,7 @@ class AsyncBot:
                 if event.text.startswith(command[0]):
                     try:
                         await command[1](
-                            CommandContext(
+                            AsyncCommandContext(
                                 self,
                                 self.get_user_by_nick(event.nick),
                                 "chat",
@@ -164,7 +164,7 @@ class AsyncBot:
                 if event.content.startswith(command[0]):
                     try:
                         await command[1](
-                            CommandContext(
+                            AsyncCommandContext(
                                 self,
                                 self.get_user_by_nick(event.nick),
                                 "whisper",

@@ -217,7 +217,7 @@ class AsyncBot:
         await asyncio.sleep(1)
         debug(f"Done!")
 
-    async def send_message(self, text, editable=False) -> Message:
+    async def send_message(self, text, editable=False) -> AsyncMessage:
         customId = generate_customid() if editable else None
         await self._send_model(ChatRequest(text=text, customId=customId))
 

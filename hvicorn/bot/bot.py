@@ -302,6 +302,10 @@ class Bot:
         self.killed = True
         debug("Killing ws")
         self.websocket.close()
+    
+    def close_ws(self) -> None:
+        debug("Closing ws")
+        self.websocket.close()
 
     def load_plugin(
         self,

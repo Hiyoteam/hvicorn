@@ -347,7 +347,10 @@ class Bot:
             debug(f"Running startup function: {function}")
             function()
         while not self.killed:
-            package = self.websocket.recv()
+            try:
+                package = self.websocket.recv()
+            except Exception as e:
+                raise RuntimeError("Websocket connection error: ", e)
             if not package:
                 debug("Killed")
                 self.killed = True

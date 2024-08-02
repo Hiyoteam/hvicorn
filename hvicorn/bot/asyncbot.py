@@ -354,6 +354,8 @@ class AsyncBot:
                 debug("Connection closed")
                 self.killed = True
                 break
+            except Exception as e:
+                raise RuntimeError("Websocket connection error: ", e)
             if not package:
                 debug("Killed")
                 self.killed = True

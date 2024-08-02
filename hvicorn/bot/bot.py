@@ -14,7 +14,7 @@ from threading import Thread
 import ssl
 
 WS_ADDRESS = "wss://hack.chat/chat-ws"
-
+BYPASS_GFW_SNI = False # insecure, not recommanded
 
 def threaded(func):
 
@@ -187,9 +187,12 @@ class Bot:
 
     def _connect(self) -> None:
         debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")
-        if WS_ADDRESS == "wss://hack.chat/chat-ws":
+        if WS_ADDRESS == "wss://hack.chat/chat-ws" and BYPASS_GFW_SNI:
             debug(
-                f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws"
+                f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws to bypass GFW SNI check"
+            )
+            warn(
+                f"Enabling BYPASS_GFW_SNI can bypass GFW's SNI blocking, but this can cause man-in-the-middle attacks."
             )
             self.websocket = create_connection(
                 "wss://104.131.138.176/chat-ws",

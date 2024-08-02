@@ -13,6 +13,7 @@ from traceback import format_exc
 from logging import debug, warn
 
 WS_ADDRESS = "wss://hack.chat/chat-ws"
+BYPASS_GFW_SNI = False # insecure, not recommanded
 
 
 class AsyncCommandContext:
@@ -178,9 +179,12 @@ class AsyncBot:
 
     async def _connect(self) -> None:
         debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")
-        if WS_ADDRESS == "wss://hack.chat/chat-ws":
+        if WS_ADDRESS == "wss://hack.chat/chat-ws" and BYPASS_GFW_SNI:
+            warn(
+                f"Enabling BYPASS_GFW_SNI can bypass GFW's SNI blocking, but this can cause man-in-the-middle attacks."
+            )
             debug(
-                f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws"
+                f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws to bypass GFW SNI check"
             )
             insecure_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
             insecure_ssl_context.check_hostname = False

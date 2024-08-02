@@ -20,6 +20,10 @@ class Message:
         self, mode: Literal["overwrite", "prepend", "append", "complete"], text: str
     ) -> None: ...
 
+    async def _edit(
+        self, mode: Literal["overwrite", "prepend", "append", "complete"], text: str
+    ) -> None: ...
+
     def edit(self, text):
         self.text = text
         return self._edit("overwrite", text)

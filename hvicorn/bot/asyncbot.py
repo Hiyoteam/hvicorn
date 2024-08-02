@@ -182,10 +182,13 @@ class AsyncBot:
             debug(
                 f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws"
             )
+            insecure_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            insecure_ssl_context.check_hostname = False
+            insecure_ssl_context.verify_mode = ssl.CERT_NONE
             self.websocket = await websockets.connect(
-                "wss://104.131.138.176/chat-ws",
-                extra_headers={"Host": "hack.chat"},
-                ssl=ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
+                "wss://hack.chat/chat-ws",
+                host="104.131.138.176",
+                ssl=insecure_ssl_context,
                 **self.wsopt,
             )
         else:
@@ -355,7 +358,7 @@ class AsyncBot:
                 self.killed = True
                 break
             except Exception as e:
-                raise RuntimeError("Websocket connection error: ", e)
+                raise RuntimeError("Websocket connection error: ",e)
             if not package:
                 debug("Killed")
                 self.killed = True

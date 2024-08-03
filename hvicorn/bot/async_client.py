@@ -99,8 +99,11 @@ class AsyncBot:
                 if user.__dict__.get(by) == matches:
                     results.append(user)
             else:
-                if matches(user):
-                    results.append(user)
+                if callable(matches):
+                    if matches(user):
+                        results.append(user)
+                else:
+                    raise ValueError(f"Function {matches} is not callable")
         return results
 
     def get_user_by(
@@ -143,16 +146,20 @@ class AsyncBot:
                 )
             )
         elif isinstance(event, OnlineRemovePackage):
-            if self.get_user_by_nick(event.nick):
-                self.users.remove(self.get_user_by_nick(event.nick))
+            user = self.get_user_by_nick(event.nick)
+            if user:
+                self.users.remove(user)
         if isinstance(event, ChatPackage):
             for command in self.commands.items():
                 if event.text.startswith(command[0]):
                     try:
+                        user = self.get_user_by_nick(event.nick)
+                        if not user:
+                            raise RuntimeError("User not found")
                         await command[1](
                             AsyncCommandContext(
                                 self,
-                                self.get_user_by_nick(event.nick),
+                                user,
                                 "chat",
                                 event.text,
                                 event.text.replace(command[0], "", 1).lstrip(),
@@ -165,10 +172,13 @@ class AsyncBot:
             for command in self.commands.items():
                 if event.content.startswith(command[0]):
                     try:
+                        user = self.get_user_by_nick(event.nick)
+                        if not user:
+                            raise RuntimeError("User not found")
                         await command[1](
                             AsyncCommandContext(
                                 self,
-                                self.get_user_by_nick(event.nick),
+                                user,
                                 "whisper",
                                 event.content,
                                 event.content.replace(command[0], "", 1).lstrip(),
@@ -222,12 +232,12 @@ class AsyncBot:
         customId = generate_customid() if editable else None
         await self._send_model(ChatRequest(text=text, customId=customId))
 
-        msg = Message(text, customId)
+        msg = AsyncMessage(text, customId)
 
         async def wrapper(*args, **kwargs):
             await self._send_model(msg._generate_edit_request(*args, **kwargs))
 
-        msg._edit = wrapper
+        msg.__setattr__("_edit", wrapper)
         return msg
 
     async def whisper(self, nick: str, text: str) -> None:
@@ -247,7 +257,7 @@ class AsyncBot:
     async def invite(self, nick: str, channel: Optional[str] = None) -> None:
         await self._send_model(InviteRequest(nick=nick, to=channel))
 
-    def on(self, event_type: Any = None) -> None:
+    def on(self, event_type: Any = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         def wrapper(func: Callable):
             nonlocal event_type
             if event_type is None:
@@ -266,14 +276,14 @@ class AsyncBot:
         debug(f"Added startup function: {function}")
         return None
 
-    def command(self, prefix: str) -> None:
+    def command(self, prefix: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         def wrapper(func: Callable):
             if prefix in self.commands.keys():
                 warn(
                     f"Overriding function {self.commands[prefix]} for command prefix {prefix}"
                 )
             self.commands[prefix] = func
-
+            return func
         return wrapper
 
     def register_event_function(self, event_type: Any, function: Callable):
@@ -301,10 +311,14 @@ class AsyncBot:
     def kill(self) -> None:
         self.killed = True
         debug("Killing ws")
+        if not self.websocket:
+            raise ConnectionError("Websocket is already closed / not open")
         asyncio.create_task(self.websocket.close())
 
     async def close_ws(self) -> None:
         debug("Closing ws")
+        if not self.websocket:
+            raise ConnectionError("Websocket is already closed / not open")
         await self.websocket.close()
 
     async def load_plugin(
@@ -355,7 +369,7 @@ class AsyncBot:
                 await function()
             else:
                 function()
-        while not self.killed:
+        while not self.killed and self.websocket is not None:
             try:
                 package = await self.websocket.recv()
             except websockets.ConnectionClosed:
@@ -368,21 +382,21 @@ class AsyncBot:
                 debug("Killed")
                 self.killed = True
                 break
-            package = loads(package)
+            package_dict: Dict[Any, Any] = loads(package)
             try:
-                event = json_to_object(package)
+                event = json_to_object(package_dict)
             except Exception as e:
                 debug(e)
                 warn(
-                    f"Failed to parse event, ignoring: {package} cause exception: \n{format_exc()}"
+                    f"Failed to parse event, ignoring: {package_dict} cause exception: \n{format_exc()}"
                 )
                 continue
             debug(f"Got event {type(event)}::{str(event)}")
-            try:
+            if isinstance(event, (ChatPackage, EmotePackage, OnlineAddPackage, OnlineRemovePackage, WhisperPackage)):
                 if event.nick == self.nick and ignore_self:
                     debug("Found self.nick, ignoring")
                     continue
-            except:
+            else:
                 debug("No nick provided in event, passing loopcheck")
             await self._run_events("__GLOBAL__", [event])
             await self._run_events(type(event), [event])

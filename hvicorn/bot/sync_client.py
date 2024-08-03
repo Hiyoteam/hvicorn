@@ -107,8 +107,11 @@ class Bot:
                 if user.__dict__.get(by) == matches:
                     results.append(user)
             else:
-                if matches(user):
-                    results.append(user)
+                if callable(matches):
+                    if matches(user):
+                        results.append(user)
+                else:
+                    raise ValueError(f"Function {matches} is not callable")
         return results
 
     def get_user_by(
@@ -151,16 +154,20 @@ class Bot:
                 )
             )
         elif isinstance(event, OnlineRemovePackage):
-            if self.get_user_by_nick(event.nick):
-                self.users.remove(self.get_user_by_nick(event.nick))
+            user = self.get_user_by_nick(event.nick)
+            if user:
+                self.users.remove(user)
         if isinstance(event, ChatPackage):
             for command in self.commands.items():
                 if event.text.startswith(command[0]):
                     try:
+                        user = self.get_user_by_nick(event.nick)
+                        if not user:
+                            raise RuntimeError("User not found")
                         command[1](
                             CommandContext(
                                 self,
-                                self.get_user_by_nick(event.nick),
+                                user,
                                 "chat",
                                 event.text,
                                 event.text.replace(command[0], "", 1).lstrip(),
@@ -173,10 +180,13 @@ class Bot:
             for command in self.commands.items():
                 if event.content.startswith(command[0]):
                     try:
+                        user = self.get_user_by_nick(event.nick)
+                        if not user:
+                            raise RuntimeError("User not found")
                         command[1](
                             CommandContext(
                                 self,
-                                self.get_user_by_nick(event.nick),
+                                user,
                                 "whisper",
                                 event.content,
                                 event.content.replace(command[0], "", 1).lstrip(),
@@ -204,7 +214,7 @@ class Bot:
         else:
             self.websocket = create_connection(WS_ADDRESS, **self.wsopt)
         debug(f"Connected!")
-        while not self.websocket.connected:
+        while not self.websocket or not self.websocket.connected:
             sleep(1)
 
     def _run_events(self, event_type: Any, args: list):
@@ -231,7 +241,7 @@ class Bot:
         def wrapper(*args, **kwargs):
             self._send_model(msg._generate_edit_request(*args, **kwargs))
 
-        msg._edit = wrapper
+        msg.__setattr__("_edit", wrapper)
         return msg
 
     def whisper(self, nick: str, text: str) -> None:
@@ -251,7 +261,7 @@ class Bot:
     def invite(self, nick: str, channel: Optional[str] = None) -> None:
         self._send_model(InviteRequest(nick=nick, to=channel))
 
-    def on(self, event_type: Any = None) -> None:
+    def on(self, event_type: Any = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         def wrapper(func: Callable):
             nonlocal event_type
             if event_type is None:
@@ -270,7 +280,7 @@ class Bot:
         debug(f"Added startup function: {function}")
         return None
 
-    def command(self, prefix: str) -> None:
+    def command(self, prefix: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         def wrapper(func: Callable):
             if prefix in self.commands.keys():
                 warn(
@@ -305,10 +315,14 @@ class Bot:
     def kill(self) -> None:
         self.killed = True
         debug("Killing ws")
+        if not self.websocket:
+            raise ConnectionError("Websocket is already closed / not open")
         self.websocket.close()
 
     def close_ws(self) -> None:
         debug("Closing ws")
+        if not self.websocket:
+            raise ConnectionError("Websocket is already closed / not open")
         self.websocket.close()
 
     def load_plugin(
@@ -350,7 +364,7 @@ class Bot:
         for function in self.startup_functions:
             debug(f"Running startup function: {function}")
             function()
-        while not self.killed:
+        while not self.killed and self.websocket is not None:
             try:
                 package = self.websocket.recv()
             except Exception as e:
@@ -359,21 +373,21 @@ class Bot:
                 debug("Killed")
                 self.killed = True
                 break
-            package = loads(package)
+            package_dict: Dict[Any, Any] = loads(package)
             try:
-                event = json_to_object(package)
+                event = json_to_object(package_dict)
             except Exception as e:
                 debug(e)
                 warn(
-                    f"Failed to parse event, ignoring: {package} cause exception: \n{format_exc()}"
+                    f"Failed to parse event, ignoring: {package_dict} cause exception: \n{format_exc()}"
                 )
                 continue
             debug(f"Got event {type(event)}::{str(event)}")
-            try:
+            if isinstance(event, (ChatPackage, EmotePackage, OnlineAddPackage, OnlineRemovePackage, WhisperPackage)):
                 if event.nick == self.nick and ignore_self:
                     debug("Found self.nick, ignoring")
                     continue
-            except:
+            else:
                 debug("No nick provided in event, passing loopcheck")
             self._run_events("__GLOBAL__", [event])
             self._run_events(type(event), [event])

@@ -1,6 +1,7 @@
 import hvicorn
+from typing import Dict, Optional
 
-afked_users = {}
+afked_users: Dict[str, Optional[str]] = {}
 
 
 def plugin_init(

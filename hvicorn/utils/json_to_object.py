@@ -17,7 +17,7 @@ from hvicorn.models.server import (
     UncatchedPackage,
     RateLimitedPackage,
 )
-from typing import Union
+from typing import Union, Dict, Literal
 import string
 
 
@@ -30,7 +30,7 @@ def verifyNick(nick: str) -> bool:
     return True
 
 
-RL_MAPPING = {
+RL_MAPPING: Dict[str, Literal["CHANNEL_RL", "COLOR_RL", "CHANGENICK_RL", "MESSAGE_RL", "GLOBAL_RL"]]= {
     "You are joining channels too fast. Wait a moment and try again.": "CHANNEL_RL",
     "You are changing colors too fast. Wait a moment before trying again.": "COLOR_RL",
     "You are changing nicknames too fast. Wait a moment before trying again.": "CHANGENICK_RL",
@@ -128,8 +128,7 @@ def json_to_object(
             "You are rate-limited or blocked.",
         ]:
             return RateLimitedPackage(
-                type=RL_MAPPING[data.get("text")], text=data.get("text")
+                type=RL_MAPPING[data.get("text", "")], text=data.get("text", "")
             )
         return WarnPackage(**data)
-    else:
-        return UncatchedPackage(rawjson=data)
+    return UncatchedPackage(rawjson=data)

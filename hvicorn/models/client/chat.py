@@ -14,7 +14,10 @@ class Message:
     ):
         if not self.editable:
             raise SyntaxError("This message isn't editable.")
-        return UpdateMessageRequest(customId=self.customId, mode=mode, text=text)
+        if self.customId:
+            return UpdateMessageRequest(customId=self.customId, mode=mode, text=text)
+        else:
+            raise SyntaxError("Missing customId")
 
     def _edit(
         self, mode: Literal["overwrite", "prepend", "append", "complete"], text: str
@@ -55,7 +58,10 @@ class AsyncMessage:
     ):
         if not self.editable:
             raise SyntaxError("This message isn't editable.")
-        return UpdateMessageRequest(customId=self.customId, mode=mode, text=text)
+        if self.customId:
+            return UpdateMessageRequest(customId=self.customId, mode=mode, text=text)
+        else:
+            raise SyntaxError("Missing customId")
 
     async def _edit(
         self, mode: Literal["overwrite", "prepend", "append", "complete"], text: str

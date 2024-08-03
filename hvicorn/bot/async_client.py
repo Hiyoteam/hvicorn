@@ -259,6 +259,9 @@ class AsyncBot:
 
     async def invite(self, nick: str, channel: Optional[str] = None) -> None:
         await self._send_model(InviteRequest(nick=nick, to=channel))
+    
+    async def ping(self) -> None:
+        await self._send_model(PingRequest())
 
     def on(
         self, event_type: Any = None

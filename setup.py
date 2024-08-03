@@ -2,7 +2,7 @@ from setuptools import setup, find_packages  # type: ignore
 
 setup(
     name="hvicorn",
-    version="0.1.0",
+    version="0.1.1",
     description="A simple hack.chat bot framework with type hinting",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",

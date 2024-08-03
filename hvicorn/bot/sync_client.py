@@ -7,6 +7,7 @@ from json import loads, dumps
 from hvicorn.utils.generate_customid import generate_customid
 from hvicorn.utils.json_to_object import json_to_object, verifyNick
 from hvicorn.models.client import CustomRequest
+from hvicorn.bot.optional_features import OptionalFeatures
 from time import sleep
 from traceback import format_exc
 from logging import debug, warn
@@ -14,7 +15,6 @@ from threading import Thread
 import ssl
 
 WS_ADDRESS = "wss://hack.chat/chat-ws"
-BYPASS_GFW_SNI = False # insecure, not recommanded
 
 def threaded(func):
 
@@ -66,6 +66,7 @@ class Bot:
         self.killed: bool = False
         self.users: List[User] = []
         self.commands: Dict[str, Callable] = {}
+        self.optional_features: OptionalFeatures = OptionalFeatures()
 
     def _send_model(self, model: BaseModel) -> None:
         if type(model) == CustomRequest:
@@ -187,12 +188,12 @@ class Bot:
 
     def _connect(self) -> None:
         debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")
-        if WS_ADDRESS == "wss://hack.chat/chat-ws" and BYPASS_GFW_SNI:
+        if WS_ADDRESS == "wss://hack.chat/chat-ws" and self.optional_features.bypass_gfw_dns_poisoning:
             debug(
-                f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws to bypass GFW SNI check"
+                f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws to bypass GFW DNS poisoning"
             )
             warn(
-                f"Enabling BYPASS_GFW_SNI can bypass GFW's SNI blocking, but this can cause man-in-the-middle attacks."
+                f"Enabling bypass_gfw_dns_poisoning can bypass GFW's DNS poisoning, but this can cause man-in-the-middle attacks."
             )
             self.websocket = create_connection(
                 "wss://104.131.138.176/chat-ws",

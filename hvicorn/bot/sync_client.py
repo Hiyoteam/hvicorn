@@ -264,7 +264,7 @@ class Bot:
 
     def invite(self, nick: str, channel: Optional[str] = None) -> None:
         self._send_model(InviteRequest(nick=nick, to=channel))
-    
+
     def ping(self) -> None:
         self._send_model(PingRequest())
 

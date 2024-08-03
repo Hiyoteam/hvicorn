@@ -16,6 +16,7 @@ import ssl
 
 WS_ADDRESS = "wss://hack.chat/chat-ws"
 
+
 def threaded(func):
 
     def wrapper(*args, **kwargs):
@@ -198,7 +199,10 @@ class Bot:
 
     def _connect(self) -> None:
         debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")
-        if WS_ADDRESS == "wss://hack.chat/chat-ws" and self.optional_features.bypass_gfw_dns_poisoning:
+        if (
+            WS_ADDRESS == "wss://hack.chat/chat-ws"
+            and self.optional_features.bypass_gfw_dns_poisoning
+        ):
             debug(
                 f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws to bypass GFW DNS poisoning"
             )
@@ -261,7 +265,9 @@ class Bot:
     def invite(self, nick: str, channel: Optional[str] = None) -> None:
         self._send_model(InviteRequest(nick=nick, to=channel))
 
-    def on(self, event_type: Any = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def on(
+        self, event_type: Any = None
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         def wrapper(func: Callable):
             nonlocal event_type
             if event_type is None:
@@ -280,7 +286,9 @@ class Bot:
         debug(f"Added startup function: {function}")
         return None
 
-    def command(self, prefix: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def command(
+        self, prefix: str
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         def wrapper(func: Callable):
             if prefix in self.commands.keys():
                 warn(
@@ -383,7 +391,16 @@ class Bot:
                 )
                 continue
             debug(f"Got event {type(event)}::{str(event)}")
-            if isinstance(event, (ChatPackage, EmotePackage, OnlineAddPackage, OnlineRemovePackage, WhisperPackage)):
+            if isinstance(
+                event,
+                (
+                    ChatPackage,
+                    EmotePackage,
+                    OnlineAddPackage,
+                    OnlineRemovePackage,
+                    WhisperPackage,
+                ),
+            ):
                 if event.nick == self.nick and ignore_self:
                     debug("Found self.nick, ignoring")
                     continue

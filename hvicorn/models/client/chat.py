@@ -47,6 +47,7 @@ class Message:
         self.prepend(string)
         return self.text
 
+
 class AsyncMessage:
     def __init__(self, text: str, customId: Optional[str] = None) -> None:
         self.text = text

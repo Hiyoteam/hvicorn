@@ -190,7 +190,10 @@ class AsyncBot:
 
     async def _connect(self) -> None:
         debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")
-        if WS_ADDRESS == "wss://hack.chat/chat-ws" and self.optional_features.bypass_gfw_dns_poisoning:
+        if (
+            WS_ADDRESS == "wss://hack.chat/chat-ws"
+            and self.optional_features.bypass_gfw_dns_poisoning
+        ):
             debug(
                 f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws to bypass GFW DNS poisoning"
             )
@@ -257,7 +260,9 @@ class AsyncBot:
     async def invite(self, nick: str, channel: Optional[str] = None) -> None:
         await self._send_model(InviteRequest(nick=nick, to=channel))
 
-    def on(self, event_type: Any = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def on(
+        self, event_type: Any = None
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         def wrapper(func: Callable):
             nonlocal event_type
             if event_type is None:
@@ -276,7 +281,9 @@ class AsyncBot:
         debug(f"Added startup function: {function}")
         return None
 
-    def command(self, prefix: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def command(
+        self, prefix: str
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         def wrapper(func: Callable):
             if prefix in self.commands.keys():
                 warn(
@@ -284,6 +291,7 @@ class AsyncBot:
                 )
             self.commands[prefix] = func
             return func
+
         return wrapper
 
     def register_event_function(self, event_type: Any, function: Callable):
@@ -377,7 +385,7 @@ class AsyncBot:
                 self.killed = True
                 break
             except Exception as e:
-                raise RuntimeError("Websocket connection error: ",e)
+                raise RuntimeError("Websocket connection error: ", e)
             if not package:
                 debug("Killed")
                 self.killed = True
@@ -392,7 +400,16 @@ class AsyncBot:
                 )
                 continue
             debug(f"Got event {type(event)}::{str(event)}")
-            if isinstance(event, (ChatPackage, EmotePackage, OnlineAddPackage, OnlineRemovePackage, WhisperPackage)):
+            if isinstance(
+                event,
+                (
+                    ChatPackage,
+                    EmotePackage,
+                    OnlineAddPackage,
+                    OnlineRemovePackage,
+                    WhisperPackage,
+                ),
+            ):
                 if event.nick == self.nick and ignore_self:
                     debug("Found self.nick, ignoring")
                     continue

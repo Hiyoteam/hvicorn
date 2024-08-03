@@ -30,7 +30,9 @@ def verifyNick(nick: str) -> bool:
     return True
 
 
-RL_MAPPING: Dict[str, Literal["CHANNEL_RL", "COLOR_RL", "CHANGENICK_RL", "MESSAGE_RL", "GLOBAL_RL"]]= {
+RL_MAPPING: Dict[
+    str, Literal["CHANNEL_RL", "COLOR_RL", "CHANGENICK_RL", "MESSAGE_RL", "GLOBAL_RL"]
+] = {
     "You are joining channels too fast. Wait a moment and try again.": "CHANNEL_RL",
     "You are changing colors too fast. Wait a moment before trying again.": "COLOR_RL",
     "You are changing nicknames too fast. Wait a moment before trying again.": "CHANGENICK_RL",

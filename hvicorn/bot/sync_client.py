@@ -261,6 +261,7 @@ class Bot:
         if not verifyNick(nick):
             raise ValueError("Invaild Nickname")
         self._send_model(ChangeNickRequest(nick=nick))
+        self.nick = nick
 
     def invite(self, nick: str, channel: Optional[str] = None) -> None:
         self._send_model(InviteRequest(nick=nick, to=channel))

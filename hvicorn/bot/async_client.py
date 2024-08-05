@@ -256,6 +256,7 @@ class AsyncBot:
         if not verifyNick(nick):
             raise ValueError("Invalid Nickname")
         await self._send_model(ChangeNickRequest(nick=nick))
+        self.nick = nick
 
     async def invite(self, nick: str, channel: Optional[str] = None) -> None:
         await self._send_model(InviteRequest(nick=nick, to=channel))

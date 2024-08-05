@@ -187,6 +187,17 @@ class AsyncBot:
                         )
                     except:
                         warn(f"Ignoring exception in command: \n{format_exc()}")
+        if isinstance(event, UpdateUserPackage):
+            if not event.nick:
+                return
+            target_user = self.get_user_by_nick(event.nick)
+            for k, v in event.model_dump().items():
+                if (
+                    k in dir(target_user)
+                    and v != None
+                    and v != target_user.__getattribute__(k)
+                ):
+                    target_user.__setattr__(k, v)
 
     async def _connect(self) -> None:
         debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")

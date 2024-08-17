@@ -224,11 +224,11 @@ class AsyncBot:
             self.websocket = await websockets.connect(WS_ADDRESS, **self.wsopt)
         debug(f"Connected!")
 
-    async def _run_events(self, event_type: Any, args: list):
+    async def _run_events(self, event_type: Any, args: list, taskgroup: asyncio.TaskGroup):
         for function in self.event_functions.get(event_type, []):
             try:
                 if asyncio.iscoroutinefunction(function):
-                    await function(*args)
+                    taskgroup.create_task(function(*args))
                 else:
                     function(*args)
             except:
@@ -392,43 +392,49 @@ class AsyncBot:
                 await function()
             else:
                 function()
-        while not self.killed and self.websocket is not None:
-            try:
-                package = await self.websocket.recv()
-            except websockets.ConnectionClosed:
-                debug("Connection closed")
-                self.killed = True
-                break
-            except Exception as e:
-                raise RuntimeError("Websocket connection error: ", e)
-            if not package:
-                debug("Killed")
-                self.killed = True
-                break
-            package_dict: Dict[Any, Any] = loads(package)
-            try:
-                event = json_to_object(package_dict)
-            except Exception as e:
-                debug(e)
-                warn(
-                    f"Failed to parse event, ignoring: {package_dict} cause exception: \n{format_exc()}"
-                )
-                continue
-            debug(f"Got event {type(event)}::{str(event)}")
-            if isinstance(
-                event,
-                (
-                    ChatPackage,
-                    EmotePackage,
-                    OnlineAddPackage,
-                    OnlineRemovePackage,
-                    WhisperPackage,
-                ),
-            ):
-                if event.nick == self.nick and ignore_self:
-                    debug("Found self.nick, ignoring")
-                    continue
-            else:
-                debug("No nick provided in event, passing loopcheck")
-            await self._run_events("__GLOBAL__", [event])
-            await self._run_events(type(event), [event])
+        try:
+            async with asyncio.TaskGroup() as taskgroup:
+                while not self.killed and self.websocket is not None:
+                    try:
+                        package = await self.websocket.recv()
+                    except websockets.ConnectionClosed:
+                        debug("Connection closed")
+                        self.killed = True
+                        break
+                    except Exception as e:
+                        raise RuntimeError("Websocket connection error: ", e)
+                    if not package:
+                        debug("Killed")
+                        self.killed = True
+                        break
+                    package_dict: Dict[Any, Any] = loads(package)
+                    try:
+                        event = json_to_object(package_dict)
+                    except Exception as e:
+                        debug(e)
+                        warn(
+                            f"Failed to parse event, ignoring: {package_dict} cause exception: \n{format_exc()}"
+                        )
+                        continue
+                    debug(f"Got event {type(event)}::{str(event)}")
+                    if isinstance(
+                        event,
+                        (
+                            ChatPackage,
+                            EmotePackage,
+                            OnlineAddPackage,
+                            OnlineRemovePackage,
+                            WhisperPackage,
+                        ),
+                    ):
+                        if event.nick == self.nick and ignore_self:
+                            debug("Found self.nick, ignoring")
+                            continue
+                    else:
+                        debug("No nick provided in event, passing loopcheck")
+                    await self._run_events("__GLOBAL__", [event], taskgroup)
+                    await self._run_events(type(event), [event], taskgroup)
+                if self.websocket.open:
+                    self.kill()
+        except asyncio.exceptions.CancelledError:
+            pass

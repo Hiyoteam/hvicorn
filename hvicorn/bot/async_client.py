@@ -152,7 +152,7 @@ class AsyncBot:
                 self.users.remove(user)
         if isinstance(event, ChatPackage):
             for command in self.commands.items():
-                if event.text.startswith(command[0]+" ") or event.text == command[0]:
+                if event.text.startswith(command[0] + " ") or event.text == command[0]:
                     try:
                         user = self.get_user_by_nick(event.nick)
                         if not user:
@@ -163,7 +163,11 @@ class AsyncBot:
                                 user,
                                 "chat",
                                 event.text,
-                                event.text.split(" ",1)[1] if event.text != command[0] else "",
+                                (
+                                    event.text.split(" ", 1)[1]
+                                    if event.text != command[0]
+                                    else ""
+                                ),
                                 event,
                             )
                         )
@@ -171,7 +175,10 @@ class AsyncBot:
                         warn(f"Ignoring exception in command: \n{format_exc()}")
         if isinstance(event, WhisperPackage):
             for command in self.commands.items():
-                if event.content.startswith(command[0]+" ") or event.content == command[0]:
+                if (
+                    event.content.startswith(command[0] + " ")
+                    or event.content == command[0]
+                ):
                     try:
                         user = self.get_user_by_nick(event.nick)
                         if not user:
@@ -182,7 +189,11 @@ class AsyncBot:
                                 user,
                                 "whisper",
                                 event.content,
-                                event.content.split(" ",1)[1] if event.content != command[0] else "",
+                                (
+                                    event.content.split(" ", 1)[1]
+                                    if event.content != command[0]
+                                    else ""
+                                ),
                                 event,
                             )
                         )
@@ -225,7 +236,9 @@ class AsyncBot:
             self.websocket = await websockets.connect(WS_ADDRESS, **self.wsopt)
         debug(f"Connected!")
 
-    async def _run_events(self, event_type: Any, args: list, taskgroup: asyncio.TaskGroup):
+    async def _run_events(
+        self, event_type: Any, args: list, taskgroup: asyncio.TaskGroup
+    ):
         for function in self.event_functions.get(event_type, []):
             try:
                 if asyncio.iscoroutinefunction(function):
@@ -290,6 +303,7 @@ class AsyncBot:
                 self.event_functions[event_type] = [func]
                 debug(f"Set handler for {event_type} to {func}")
             return func
+
         return wrapper
 
     def startup(self, function: Callable) -> None:
@@ -299,7 +313,9 @@ class AsyncBot:
 
     def command(
         self, prefix: str
-    ) -> Callable[[Callable[[AsyncCommandContext], Any]], Callable[[AsyncCommandContext], Any]]:
+    ) -> Callable[
+        [Callable[[AsyncCommandContext], Any]], Callable[[AsyncCommandContext], Any]
+    ]:
         def wrapper(func: Callable[[AsyncCommandContext], Any]):
             if prefix in self.commands.keys():
                 warn(

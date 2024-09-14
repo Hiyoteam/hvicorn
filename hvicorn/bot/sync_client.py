@@ -161,7 +161,7 @@ class Bot:
                 self.users.remove(user)
         if isinstance(event, ChatPackage):
             for command in self.commands.items():
-                if event.text.startswith(command[0]):
+                if event.text.startswith(command[0]+" ") or event.text == command[0]:
                     try:
                         user = self.get_user_by_nick(event.nick)
                         if not user:
@@ -172,7 +172,7 @@ class Bot:
                                 user,
                                 "chat",
                                 event.text,
-                                event.text.replace(command[0], "", 1).lstrip(),
+                                event.text.split(" ",1)[1] if event.text != command[0] else "",
                                 event,
                             )
                         )
@@ -180,7 +180,7 @@ class Bot:
                         warn(f"Ignoring exception in command: \n{format_exc()}")
         if isinstance(event, WhisperPackage):
             for command in self.commands.items():
-                if event.content.startswith(command[0]):
+                if event.content.startswith(command[0]+" ") or event.content == command[0]:
                     try:
                         user = self.get_user_by_nick(event.nick)
                         if not user:
@@ -191,7 +191,7 @@ class Bot:
                                 user,
                                 "whisper",
                                 event.content,
-                                event.content.replace(command[0], "", 1).lstrip(),
+                                event.content.split(" ",1)[1] if event.content != command[0] else "",
                                 event,
                             )
                         )

@@ -68,6 +68,7 @@ class AsyncBot:
                 data = model.model_dump()
             except:
                 warn(f"Cannot stringify model, ignoring: {model}")
+                return
             payload = {}
             for k, v in data.items():
                 if v != None:
@@ -276,9 +277,9 @@ class AsyncBot:
         await self._send_model(PingRequest())
 
     def on(
-        self, event_type: Any = None
+        self, event_type: Optional[Any] = None
     ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        def wrapper(func: Callable):
+        def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
             nonlocal event_type
             if event_type is None:
                 event_type = "__GLOBAL__"
@@ -288,7 +289,7 @@ class AsyncBot:
             else:
                 self.event_functions[event_type] = [func]
                 debug(f"Set handler for {event_type} to {func}")
-
+            return func
         return wrapper
 
     def startup(self, function: Callable) -> None:
@@ -298,8 +299,8 @@ class AsyncBot:
 
     def command(
         self, prefix: str
-    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        def wrapper(func: Callable):
+    ) -> Callable[[Callable[[AsyncCommandContext], Any]], Callable[[AsyncCommandContext], Any]]:
+        def wrapper(func: Callable[[AsyncCommandContext], Any]):
             if prefix in self.commands.keys():
                 warn(
                     f"Overriding function {self.commands[prefix]} for command prefix {prefix}"
@@ -434,7 +435,7 @@ class AsyncBot:
                         debug("No nick provided in event, passing loopcheck")
                     await self._run_events("__GLOBAL__", [event], taskgroup)
                     await self._run_events(type(event), [event], taskgroup)
-                if self.websocket.open:
+                if self.websocket and self.websocket.open:
                     self.kill()
         except asyncio.exceptions.CancelledError:
             pass

@@ -77,6 +77,7 @@ class Bot:
                 data = model.model_dump()
             except:
                 warn(f"Cannot stringify model, ignoring: {model}")
+                return
             payload = {}
             for k, v in data.items():
                 if v != None:
@@ -281,9 +282,9 @@ class Bot:
         self._send_model(PingRequest())
 
     def on(
-        self, event_type: Any = None
+        self, event_type: Optional[Any] = None
     ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        def wrapper(func: Callable):
+        def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
             nonlocal event_type
             if event_type is None:
                 event_type = "__GLOBAL__"
@@ -293,7 +294,7 @@ class Bot:
             else:
                 self.event_functions[event_type] = [func]
                 debug(f"Set handler for {event_type} to {func}")
-
+            return func
         return wrapper
 
     def startup(self, function: Callable) -> None:
@@ -303,13 +304,14 @@ class Bot:
 
     def command(
         self, prefix: str
-    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        def wrapper(func: Callable):
+    ) -> Callable[[Callable[[CommandContext], Any]], Callable[[CommandContext], Any]]:
+        def wrapper(func: Callable[[CommandContext], Any]):
             if prefix in self.commands.keys():
                 warn(
                     f"Overriding function {self.commands[prefix]} for command prefix {prefix}"
                 )
             self.commands[prefix] = func
+            return func
 
         return wrapper
 

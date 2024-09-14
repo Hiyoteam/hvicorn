@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, Literal
 from hvicorn.models.client.update_message import UpdateMessageRequest
+from asyncio import run
 
 
 class Message:
@@ -36,16 +37,18 @@ class Message:
         return self._edit("append", text)
 
     def complete(self):
+        if not self.customId:
+            raise SyntaxError("Missing customId")
         self.editable = False
         return UpdateMessageRequest(customId=self.customId, mode="complete")
 
     def __add__(self, string: str):
         self.append(string)
-        return self.text
+        return self
 
     def __radd__(self, string: str):
         self.prepend(string)
-        return self.text
+        return self
 
 
 class AsyncMessage:
@@ -82,15 +85,17 @@ class AsyncMessage:
 
     async def complete(self):
         self.editable = False
+        if not self.customId:
+            raise SyntaxError("Missing customId")
         return UpdateMessageRequest(customId=self.customId, mode="complete")
 
     def __add__(self, string: str):
-        self.append(string)
-        return self.text
+        run(self.append(string))
+        return self
 
     def __radd__(self, string: str):
-        self.prepend(string)
-        return self.text
+        run(self.prepend(string))
+        return self
 
 
 class ChatRequest(BaseModel):

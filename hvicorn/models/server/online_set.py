@@ -3,7 +3,7 @@ from typing import Optional, Literal, List, Union
 
 
 class User(BaseModel):
-    channel: Optional[str]
+    channel: Optional[str] = None
     color: Union[str, bool]
     hash: str
     isBot: bool

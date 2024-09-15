@@ -3,7 +3,7 @@ from typing import Union, Optional, Literal
 
 
 class OnlineAddPackage(BaseModel):
-    channel: Optional[str]
+    channel: Optional[str] = None
     cmd: str
     color: Union[bool, str]
     hash: str

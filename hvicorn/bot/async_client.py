@@ -20,6 +20,7 @@ class AsyncCommandContext:
     """
     Represents the context in which a command is executed.
     """
+
     def __init__(
         self,
         bot: "AsyncBot",
@@ -69,6 +70,7 @@ class AsyncBot:
     """
     Represents a hack.chat bot.
     """
+
     def __init__(self, nick: str, channel: str, password: Optional[str] = None) -> None:
         """
         Initialize a Bot instance.
@@ -435,6 +437,7 @@ class AsyncBot:
         Returns:
             Callable[[Callable[..., Any]], Callable[..., Any]]: A decorator function.
         """
+
         def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
             nonlocal event_type
             if event_type is None:
@@ -474,6 +477,7 @@ class AsyncBot:
         Returns:
             Callable[[Callable[[CommandContext], Any]], Callable[[CommandContext], Any]]: A decorator function.
         """
+
         def wrapper(func: Callable[[AsyncCommandContext], Any]):
             if prefix in self.commands.keys():
                 warn(

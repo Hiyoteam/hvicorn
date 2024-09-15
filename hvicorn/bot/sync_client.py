@@ -27,6 +27,7 @@ def threaded(func):
     Returns:
         Callable: A wrapper function that starts a new thread.
     """
+
     def wrapper(*args, **kwargs):
         Thread(target=func, args=tuple(args), kwargs=kwargs).start()
 
@@ -37,6 +38,7 @@ class CommandContext:
     """
     Represents the context in which a command is executed.
     """
+
     def __init__(
         self,
         bot: "Bot",
@@ -86,6 +88,7 @@ class Bot:
     """
     Represents a hack.chat bot.
     """
+
     def __init__(self, nick: str, channel: str, password: Optional[str] = None) -> None:
         """
         Initialize a Bot instance.
@@ -446,6 +449,7 @@ class Bot:
         Returns:
             Callable[[Callable[..., Any]], Callable[..., Any]]: A decorator function.
         """
+
         def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
             nonlocal event_type
             if event_type is None:
@@ -483,6 +487,7 @@ class Bot:
         Returns:
             Callable[[Callable[[CommandContext], Any]], Callable[[CommandContext], Any]]: A decorator function.
         """
+
         def wrapper(func: Callable[[CommandContext], Any]):
             if prefix in self.commands.keys():
                 warn(

@@ -17,6 +17,9 @@ WS_ADDRESS = "wss://hack.chat/chat-ws"
 
 
 class AsyncCommandContext:
+    """
+    Represents the context in which a command is executed.
+    """
     def __init__(
         self,
         bot: "AsyncBot",
@@ -26,6 +29,17 @@ class AsyncCommandContext:
         args: str,
         event: Union[WhisperPackage, ChatPackage],
     ) -> None:
+        """
+        Initialize a CommandContext instance.
+
+        Args:
+            bot (Bot): The bot instance.
+            sender (User): The user who triggered the command.
+            triggered_via (Literal["chat", "whisper"]): The method by which the command was triggered.
+            text (str): The full text of the command.
+            args (str): The arguments passed to the command.
+            event (Union[WhisperPackage, ChatPackage]): The event that triggered the command.
+        """
         self.bot: "AsyncBot" = bot
         self.sender: User = sender
         self.triggered_via: Literal["chat", "whisper"] = triggered_via
@@ -34,6 +48,13 @@ class AsyncCommandContext:
         self.event: Union[WhisperPackage, ChatPackage] = event
 
     async def respond(self, text, at_sender=True):
+        """
+        Respond to the command.
+
+        Args:
+            text (str): The text to respond with.
+            at_sender (bool, optional): Whether to mention the sender in the response. Defaults to True.
+        """
         if self.triggered_via == "chat":
             await self.bot.send_message(
                 ("@" + self.sender.nick + " " if at_sender else "") + str(text)
@@ -45,7 +66,18 @@ class AsyncCommandContext:
 
 
 class AsyncBot:
+    """
+    Represents a hack.chat bot.
+    """
     def __init__(self, nick: str, channel: str, password: Optional[str] = None) -> None:
+        """
+        Initialize a Bot instance.
+
+        Args:
+            nick (str): The bot's nickname.
+            channel (str): The channel to join.
+            password (Optional[str], optional): The channel password. Defaults to None.
+        """
         self.nick = nick
         self.channel = channel
         self.password = password
@@ -61,6 +93,12 @@ class AsyncBot:
         self.optional_features: OptionalFeatures = OptionalFeatures()
 
     async def _send_model(self, model: BaseModel) -> None:
+        """
+        Send a model to the websocket.
+
+        Args:
+            model (BaseModel): The model to send.
+        """
         if type(model) == CustomRequest:
             payload = model.rawjson
         else:
@@ -94,6 +132,16 @@ class AsyncBot:
         ],
         matches: Union[str, Callable],
     ) -> List[User]:
+        """
+        Get users by a specific attribute or custom function.
+
+        Args:
+            by (Literal): The attribute to match by.
+            matches (Union[str, Callable]): The value to match or a custom function.
+
+        Returns:
+            List[User]: A list of matching users.
+        """
         results = []
         for user in self.users:
             if by != "function":
@@ -122,13 +170,38 @@ class AsyncBot:
         ],
         matches: Union[str, Callable],
     ) -> Optional[User]:
+        """
+        Get a single user by a specific attribute or custom function.
+
+        Args:
+            by (Literal): The attribute to match by.
+            matches (Union[str, Callable]): The value to match or a custom function.
+
+        Returns:
+            Optional[User]: The matching user, if found.
+        """
         result = self.get_users_by(by, matches)
         return result[0] if result else None
 
     def get_user_by_nick(self, nick: str) -> Optional[User]:
+        """
+        Get a user by their nickname.
+
+        Args:
+            nick (str): The nickname to search for.
+
+        Returns:
+            Optional[User]: The matching user, if found.
+        """
         return self.get_user_by("nick", nick)
 
     async def _internal_handler(self, event: BaseModel) -> None:
+        """
+        Internal event handler for processing various types of events.
+
+        Args:
+            event (BaseModel): The event to process.
+        """
         if isinstance(event, OnlineSetPackage):
             self.users = event.users
         elif isinstance(event, OnlineAddPackage):
@@ -212,6 +285,9 @@ class AsyncBot:
                     target_user.__setattr__(k, v)
 
     async def _connect(self) -> None:
+        """
+        Connect to the websocket server.
+        """
         debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")
         if (
             WS_ADDRESS == "wss://hack.chat/chat-ws"
@@ -239,6 +315,13 @@ class AsyncBot:
     async def _run_events(
         self, event_type: Any, args: list, taskgroup: asyncio.TaskGroup
     ):
+        """
+        Run event handlers for a specific event type.
+
+        Args:
+            event_type (Any): The type of event to run handlers for.
+            args (list): Arguments to pass to the event handlers.
+        """
         for function in self.event_functions.get(event_type, []):
             try:
                 if asyncio.iscoroutinefunction(function):
@@ -249,6 +332,9 @@ class AsyncBot:
                 warn(f"Ignoring exception in event: \n{format_exc()}")
 
     async def join(self) -> None:
+        """
+        Join the specified channel.
+        """
         debug(f"Sending join package")
         await self._send_model(
             JoinRequest(nick=self.nick, channel=self.channel, password=self.password)
@@ -257,6 +343,16 @@ class AsyncBot:
         debug(f"Done!")
 
     async def send_message(self, text, editable=False) -> AsyncMessage:
+        """
+        Send a message to the channel.
+
+        Args:
+            text (str): The message text.
+            editable (bool, optional): Whether the message should be editable. Defaults to False.
+
+        Returns:
+            Message: The sent message object.
+        """
         customId = generate_customid() if editable else None
         await self._send_model(ChatRequest(text=text, customId=customId))
 
@@ -269,29 +365,76 @@ class AsyncBot:
         return msg
 
     async def whisper(self, nick: str, text: str) -> None:
+        """
+        Send a whisper (private message) to a user.
+
+        Args:
+            nick (str): The nickname of the recipient.
+            text (str): The message text.
+        """
         await self._send_model(WhisperRequest(nick=nick, text=text))
 
     async def emote(self, text: str) -> None:
+        """
+        Send an emote message to the channel.
+
+        Args:
+            text (str): The emote text.
+        """
         await self._send_model(EmoteRequest(text=text))
 
     async def change_color(self, color: str = "reset") -> None:
+        """
+        Change the bot's color.
+
+        Args:
+            color (str, optional): The new color. Defaults to "reset".
+        """
         await self._send_model(ChangeColorRequest(color=color))
 
     async def change_nick(self, nick: str) -> None:
+        """
+        Change the bot's nickname.
+
+        Args:
+            nick (str): The new nickname.
+
+        Raises:
+            ValueError: If the nickname is invalid.
+        """
         if not verifyNick(nick):
             raise ValueError("Invalid Nickname")
         await self._send_model(ChangeNickRequest(nick=nick))
         self.nick = nick
 
     async def invite(self, nick: str, channel: Optional[str] = None) -> None:
+        """
+        Invite a user to a channel.
+
+        Args:
+            nick (str): The nickname of the user to invite.
+            channel (Optional[str], optional): The channel to invite to. Defaults to None.
+        """
         await self._send_model(InviteRequest(nick=nick, to=channel))
 
     async def ping(self) -> None:
+        """
+        Send a ping request to the server.
+        """
         await self._send_model(PingRequest())
 
     def on(
         self, event_type: Optional[Any] = None
     ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+        """
+        Decorator for registering event handlers.
+
+        Args:
+            event_type (Optional[Any], optional): The type of event to handle. Defaults to None.
+
+        Returns:
+            Callable[[Callable[..., Any]], Callable[..., Any]]: A decorator function.
+        """
         def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
             nonlocal event_type
             if event_type is None:
@@ -307,6 +450,12 @@ class AsyncBot:
         return wrapper
 
     def startup(self, function: Callable) -> None:
+        """
+        Register a startup function.
+
+        Args:
+            function (Callable): The function to run at startup.
+        """
         self.startup_functions.append(function)
         debug(f"Added startup function: {function}")
         return None
@@ -316,6 +465,15 @@ class AsyncBot:
     ) -> Callable[
         [Callable[[AsyncCommandContext], Any]], Callable[[AsyncCommandContext], Any]
     ]:
+        """
+        Decorator for registering command handlers.
+
+        Args:
+            prefix (str): The command prefix.
+
+        Returns:
+            Callable[[Callable[[CommandContext], Any]], Callable[[CommandContext], Any]]: A decorator function.
+        """
         def wrapper(func: Callable[[AsyncCommandContext], Any]):
             if prefix in self.commands.keys():
                 warn(
@@ -327,6 +485,13 @@ class AsyncBot:
         return wrapper
 
     def register_event_function(self, event_type: Any, function: Callable):
+        """
+        Register an event handler function.
+
+        Args:
+            event_type (Any): The type of event to handle.
+            function (Callable): The function to handle the event.
+        """
         if event_type in self.event_functions.keys():
             self.event_functions[event_type].append(function)
             debug(f"Added handler for {event_type}: {function}")
@@ -335,13 +500,32 @@ class AsyncBot:
             debug(f"Set handler for {event_type} to {function}")
 
     def register_global_function(self, function: Callable):
+        """
+        Register a global event handler function.
+
+        Args:
+            function (Callable): The function to handle all events.
+        """
         self.register_event_function("__GLOBAL__", function)
 
     def register_startup_function(self, function: Callable):
+        """
+        Register a startup function.
+
+        Args:
+            function (Callable): The function to run at startup.
+        """
         self.startup_functions.append(function)
         debug(f"Added startup function: {function}")
 
     def register_command(self, prefix: str, function: Callable):
+        """
+        Register a command handler function.
+
+        Args:
+            prefix (str): The command prefix.
+            function (Callable): The function to handle the command.
+        """
         if prefix in self.commands.keys():
             warn(
                 f"Overriding function {self.commands[prefix]} for command prefix {prefix}"
@@ -349,6 +533,12 @@ class AsyncBot:
         self.commands[prefix] = function
 
     def kill(self) -> None:
+        """
+        Kill the bot and close the websocket connection.
+
+        Raises:
+            ConnectionError: If the websocket is already closed or not open.
+        """
         self.killed = True
         debug("Killing ws")
         if not self.websocket:
@@ -356,6 +546,12 @@ class AsyncBot:
         asyncio.create_task(self.websocket.close())
 
     async def close_ws(self) -> None:
+        """
+        Close the websocket connection.
+
+        Raises:
+            ConnectionError: If the websocket is already closed or not open.
+        """
         debug("Closing ws")
         if not self.websocket:
             raise ConnectionError("Websocket is already closed / not open")
@@ -368,6 +564,15 @@ class AsyncBot:
         *args,
         **kwargs,
     ) -> None:
+        """
+        Load a plugin.
+
+        Args:
+            plugin_name (str): The name of the plugin to load.
+            init_function (Optional[Callable], optional): Custom initialization function. Defaults to None.
+            *args: Additional positional arguments to pass to the init function.
+            **kwargs: Additional keyword arguments to pass to the init function.
+        """
         if not init_function:
             try:
                 plugin = __import__(plugin_name)
@@ -400,6 +605,16 @@ class AsyncBot:
         debug(f"Loaded plugin {plugin_name}")
 
     async def run(self, ignore_self: bool = True, wsopt: Dict = {}) -> None:
+        """
+        Run the bot.
+
+        Args:
+            ignore_self (bool, optional): Whether to ignore messages from the bot itself. Defaults to True.
+            wsopt (Dict, optional): Additional websocket options. Defaults to {}.
+
+        Raises:
+            RuntimeError: If there's a websocket connection error.
+        """
         self.wsopt = wsopt if wsopt != {} else self.wsopt
         await self._connect()
         await self.join()

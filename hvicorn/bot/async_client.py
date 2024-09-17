@@ -636,6 +636,7 @@ class AsyncBot:
                     except websockets.ConnectionClosed:
                         debug("Connection closed")
                         self.killed = True
+                        await self._run_events("disconnect", [], taskgroup=taskgroup)
                         break
                     except Exception as e:
                         raise RuntimeError("Websocket connection error: ", e)

@@ -111,6 +111,7 @@ class Bot:
         self.users: List[User] = []
         self.commands: Dict[str, Callable] = {}
         self.optional_features: OptionalFeatures = OptionalFeatures()
+        self.hooks: HookManager = HookManager()
 
     def _send_model(self, model: BaseModel) -> None:
         """
@@ -635,7 +636,8 @@ class Bot:
             except Exception as e:
                 raise RuntimeError("Websocket connection error: ", e)
             if not package:
-                debug("Killed")
+                debug("Connection Closed")
+                self._run_events("disconnect", [])
                 self.killed = True
                 break
             package_dict: Dict[Any, Any] = loads(package)

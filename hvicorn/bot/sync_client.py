@@ -111,7 +111,6 @@ class Bot:
         self.users: List[User] = []
         self.commands: Dict[str, Callable] = {}
         self.optional_features: OptionalFeatures = OptionalFeatures()
-        self.hooks: HookManager = HookManager()
 
     def _send_model(self, model: BaseModel) -> None:
         """

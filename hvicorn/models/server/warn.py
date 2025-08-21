@@ -3,5 +3,5 @@ from typing import Literal
 
 
 class WarnPackage(BaseModel):
-    cmd: Literal['warn']
+    cmd: Literal["warn"]
     text: str

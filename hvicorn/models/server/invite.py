@@ -4,7 +4,7 @@ from typing import Literal
 
 class InvitePackage(BaseModel):
     channel: str
-    cmd: Literal['invite']
+    cmd: Literal["invite"]
     from_nick: str = Field(..., alias="from")
     invite_channel: str = Field(..., alias="inviteChannel")
     text: str

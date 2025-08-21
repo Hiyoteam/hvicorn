@@ -3,6 +3,6 @@ from typing import Literal
 
 
 class WhisperRequest(BaseModel):
-    cmd: Literal['whisper'] = "whisper"
+    cmd: Literal["whisper"] = "whisper"
     nick: str
     text: str

@@ -4,6 +4,6 @@ from typing import Optional
 
 
 class InviteRequest(BaseModel):
-    cmd: Literal['invite'] = "invite"
+    cmd: Literal["invite"] = "invite"
     nick: str
     to: Optional[str]

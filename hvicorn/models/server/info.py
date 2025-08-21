@@ -3,5 +3,5 @@ from typing import Literal
 
 
 class InfoPackage(BaseModel):
-    cmd: Literal['info']
+    cmd: Literal["info"]
     text: str

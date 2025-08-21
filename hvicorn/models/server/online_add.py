@@ -4,7 +4,7 @@ from typing import Union, Optional, Literal
 
 class OnlineAddPackage(BaseModel):
     channel: Optional[str] = None
-    cmd: Literal['onlineAdd']
+    cmd: Literal["onlineAdd"]
     color: Union[bool, str]
     hash: str
     isBot: bool

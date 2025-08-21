@@ -6,7 +6,7 @@ from pydantic.fields import Field
 
 class WhisperSentPackage(BaseModel):
     channel: str
-    cmd: Literal['info']
+    cmd: Literal["info"]
     userid_from: int = Field(..., alias="from")
     text: str
     content: str  # processed by program

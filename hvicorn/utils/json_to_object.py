@@ -124,7 +124,9 @@ def json_to_object(
             "You are rate-limited or blocked.",
         ]:
             return RateLimitedPackage(
-                cmd="warn", type=RL_MAPPING[data.get("text", "")], text=data.get("text", "")
+                cmd="warn",
+                type=RL_MAPPING[data.get("text", "")],
+                text=data.get("text", ""),
             )
         return WarnPackage(**data)
     return UncatchedPackage(rawjson=data)

@@ -3,4 +3,4 @@ from pydantic import BaseModel
 
 
 class PingRequest(BaseModel):
-    cmd: Literal['ping'] = "ping"
+    cmd: Literal["ping"] = "ping"

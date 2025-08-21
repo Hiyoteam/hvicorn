@@ -5,8 +5,10 @@ from pydantic.fields import Field
 
 class WhisperPackage(BaseModel):
     channel: str
-    cmd: Literal['info']
-    nick: str = Field(..., alias="from")  # didn't use from because it's reserved py keyword
+    cmd: Literal["info"]
+    nick: str = Field(
+        ..., alias="from"
+    )  # didn't use from because it's reserved py keyword
     text: str
     content: str  # process it in the program!!!
     time: int

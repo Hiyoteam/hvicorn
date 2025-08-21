@@ -3,5 +3,5 @@ from typing import Literal
 
 
 class LockroomPackage(BaseModel):
-    cmd: Literal['info']
+    cmd: Literal["info"]
     time: int

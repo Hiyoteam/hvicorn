@@ -4,6 +4,6 @@ from typing import Literal
 
 class OnlineRemovePackage(BaseModel):
     nick: str
-    cmd: Literal['onlineRemove']
+    cmd: Literal["onlineRemove"]
     time: int
     userid: int

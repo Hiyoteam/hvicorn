@@ -6,6 +6,6 @@ class ChangeNickPackage(BaseModel):
     old_nick: str
     new_nick: str
     text: str
-    cmd: Literal['changenick']
+    cmd: Literal["changenick"]
     channel: str
     time: int

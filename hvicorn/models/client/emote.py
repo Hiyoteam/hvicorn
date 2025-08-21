@@ -3,5 +3,5 @@ from pydantic import BaseModel
 
 
 class EmoteRequest(BaseModel):
-    cmd: Literal['emote'] = "emote"
+    cmd: Literal["emote"] = "emote"
     text: str

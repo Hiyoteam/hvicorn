@@ -3,5 +3,5 @@ from pydantic import BaseModel
 
 
 class ChangeNickRequest(BaseModel):
-    cmd: Literal['changenick'] = "changenick"
+    cmd: Literal["changenick"] = "changenick"
     nick: str

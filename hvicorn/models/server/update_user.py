@@ -4,7 +4,7 @@ from typing import Union, Optional, Literal
 
 class UpdateUserPackage(BaseModel):
     channel: Optional[str] = None
-    cmd: Literal['updateUser']
+    cmd: Literal["updateUser"]
     color: Union[bool, str]
     hash: Optional[str] = None
     isBot: Optional[bool] = None

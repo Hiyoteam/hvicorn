@@ -465,9 +465,7 @@ class Bot:
 
     def command(
         self, prefix: str
-    ) -> Callable[
-        [Callable[[CommandContext], Any]], Callable[[CommandContext], Any]
-    ]:
+    ) -> Callable[[Callable[[CommandContext], Any]], Callable[[CommandContext], Any]]:
         """
         Decorator for registering command handlers.
 

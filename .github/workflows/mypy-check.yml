@@ -22,4 +22,4 @@ jobs:
         uv sync
         uv add mypy
     - name: Run mypy
-      run: mypy .
+      run: uv run mypy .

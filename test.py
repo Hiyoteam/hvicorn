@@ -67,6 +67,10 @@ async def execute(ctx: CommandContext):
         traceback.print_exc()
     return await ctx.respond("Done! check console!")
 
+@bot.register_global_function
+async def log(event):
+    print(event)
+
 async def run_bot():
     await bot.load_plugin("testplugin", command_name=".hv plugin")
     await bot.load_plugin("example_plugin_afk", command_prefix=".hv afk")

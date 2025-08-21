@@ -85,20 +85,14 @@ def json_to_object(
                 data.get("text", "")
                 == "You have been denied access to that channel and have been moved somewhere else. Retry later or wait for a mod to move you."
             ):
-                return LockroomPackage(time=data["time"])
+                return LockroomPackage(cmd="info", time=data["time"])
             return InfoPackage(**data)
         elif data.get("type") == "whisper":
             if data.get("text", "").startswith("You whispered to"):
-                data["userid_from"] = data["from"]
-                data["userid_to"] = data["to"]
-                del data["from"]
-                del data["to"]
                 data["content"] = data["text"].split(": ", 1)[1]
                 return WhisperSentPackage(**data)
             else:
-                data["nick"] = data["from"]
                 data["userid_to"] = data["to"]
-                del data["from"]
                 del data["to"]
                 data["content"] = data["text"].split(": ", 1)[1]
                 return WhisperPackage(**data)
@@ -130,7 +124,7 @@ def json_to_object(
             "You are rate-limited or blocked.",
         ]:
             return RateLimitedPackage(
-                type=RL_MAPPING[data.get("text", "")], text=data.get("text", "")
+                cmd="warn", type=RL_MAPPING[data.get("text", "")], text=data.get("text", "")
             )
         return WarnPackage(**data)
     return UncatchedPackage(rawjson=data)

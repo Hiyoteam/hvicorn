@@ -16,7 +16,7 @@ class User(BaseModel):
 
 
 class OnlineSetPackage(BaseModel):
-    cmd: str
+    cmd: Literal['onlineSet']
     channel: str
     nicks: List[str]
     time: int

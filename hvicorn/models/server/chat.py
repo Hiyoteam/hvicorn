@@ -3,7 +3,7 @@ from typing import Optional, Literal
 
 
 class ChatPackage(BaseModel):
-    cmd: str
+    cmd: Literal['chat']
     channel: str
     color: Optional[str] = None
     level: int

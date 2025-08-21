@@ -4,7 +4,7 @@ from typing import Literal
 
 class UpdateMessagePackage(BaseModel):
     channel: str
-    cmd: str
+    cmd: Literal['updateMessage']
     customId: str
     level: int
     mode: Literal["overwrite", "prepend", "append", "complete"]

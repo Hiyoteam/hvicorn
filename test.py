@@ -1,77 +1,76 @@
-from hvicorn import Bot, CommandContext, threaded, ChatPackage
+from hvicorn import Bot, CommandContext, ChatPackage
 from logging import basicConfig, DEBUG
-import time, random
+from asyncio import run, sleep
+import random
 import traceback
 
 basicConfig(level=DEBUG)
 
-bot = Bot("test_hvicorn", "lounge")
-owner_trip = "2ZQ3+0"
+bot = Bot("test_hvicorn", "test")
+owner_trip = "LMeOEB"
 
 
 @bot.startup
-@threaded
-def greetings():
-    bot.send_message(
+async def greetings():
+    await bot.send_message(
         "Hello world! I am hvicorn demo bot.\nCommands:\n\t`.hv editmsg` - demos updatemessage.\n\t`.hv invite` - demos inviting.\n\t`.hv emote` - demos emote.\n\t`.hv threading` - demos multithreading.\n\t`.hv plugin` - test plugin.\n\t`.hv afk` - a test plugin again, but it can mark you as AfKing.\nSpecial command: try sending awa"
     )
 
 
 @bot.on(ChatPackage)
-def on_chat(msg: ChatPackage):
+async def on_chat(msg: ChatPackage):
     if "awa" in msg.text:
-        bot.send_message(
+        await bot.send_message(
             f"Hey, @{msg.nick}, I see you awa-ing!\nHere's ur info(By hvicorn): {bot.get_user_by_nick(msg.nick)}"
         )
-        time.sleep(1)
-        bot.whisper(msg.nick, "Here's a *✨secret✨* message for you!")
-        time.sleep(1)
-        bot.emote(f"hugs {msg.nick}")
+        await sleep(1)
+        await bot.whisper(msg.nick, "Here's a *✨secret✨* message for you!")
+        await sleep(1)
+        await bot.emote(f"hugs {msg.nick}")
 
 
 @bot.command(".hv editmsg")
-@threaded
-def editmsg(ctx: CommandContext):
-    msg = ctx.bot.send_message("Do you like playing ", editable=True)
-    time.sleep(5)
+async def editmsg(ctx: CommandContext):
+    msg = await ctx.bot.send_message("Do you like playing ", editable=True)
+    await sleep(5)
     choice = (
         random.choice(["Genshin impact", "Honkai impact", "Minecraft", "Project sekai"])
         + "?"
     )
-    msg.append(choice)
+    await msg.append(choice)
 
 
 @bot.command(".hv invite")
-def invite(ctx: CommandContext):
-    ctx.bot.invite(ctx.sender.nick, "somechannel")
+async def invite(ctx: CommandContext):
+    await ctx.bot.invite(ctx.sender.nick, "somechannel")
 
 
 @bot.command(".hv emote")
-def emote(ctx: CommandContext):
-    ctx.bot.emote("awa")
+async def emote(ctx: CommandContext):
+    await ctx.bot.emote("awa")
 
 
-@bot.command(".hv threading")
-@threaded
-def threading(ctx: CommandContext):
-    ctx.respond("Use any command if u want. this command will block for 10secs.")
-    time.sleep(10)
-    ctx.respond("I'm back!")
+@bot.command(".hv async")
+async def async_command(ctx: CommandContext):
+    await ctx.respond("Use any command if u want. this command will block for 10secs.")
+    await sleep(10)
+    await ctx.respond("I'm back!")
 
 
 @bot.command(".hv exec")
-@threaded
-def execute(ctx: CommandContext):
+async def execute(ctx: CommandContext):
     if ctx.sender.trip != owner_trip:
-        return ctx.respond("I wouldn't do that...")
+        return await ctx.respond("I wouldn't do that...")
     try:
         exec(ctx.text.split(" ", 2)[2], globals())
     except:
         traceback.print_exc()
-    return ctx.respond("Done! check console!")
+    return await ctx.respond("Done! check console!")
 
+async def run_bot():
+    await bot.load_plugin("testplugin", command_name=".hv plugin")
+    await bot.load_plugin("example_plugin_afk", command_prefix=".hv afk")
+    
+    await bot.run()
 
-bot.load_plugin("testplugin", command_name=".hv plugin")
-bot.load_plugin("example_plugin_afk", command_prefix=".hv afk")
-
-bot.run()
+run(run_bot())

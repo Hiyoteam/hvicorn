@@ -1,7 +1,7 @@
-from hvicorn import AsyncBot, AsyncCommandContext
+from hvicorn import Bot, CommandContext
 from asyncio import run
 
-bot = AsyncBot(nick="HvicornTest", channel="lounge")
+bot = Bot(nick="HvicornTest", channel="lounge")
 
 
 @bot.startup
@@ -10,7 +10,7 @@ async def startup():
 
 
 @bot.command("Ping")
-async def pong(ctx: AsyncCommandContext):
+async def pong(ctx: CommandContext):
     await ctx.respond("Pong (in async)!")
 
 

@@ -4,7 +4,7 @@ from typing import Dict, Optional
 afked_users: Dict[str, Optional[str]] = {}
 
 
-def plugin_init(
+async def plugin_init(
     bot: hvicorn.Bot,
     command_prefix: str = "/afk",
     on_afk: str = "You are marked AfK.",
@@ -14,26 +14,26 @@ def plugin_init(
     welcome_back: str = "Welcome back.",
 ):
 
-    def mark_afk(ctx: hvicorn.CommandContext):
+    async def mark_afk(ctx: hvicorn.CommandContext):
         reason = ctx.args if ctx.args else None
         if ctx.sender.nick in afked_users.keys():
-            return ctx.respond(already_afk)
+            return await ctx.respond(already_afk)
         afked_users.update({ctx.sender.nick: reason})
-        return ctx.respond(on_afk)
+        return await ctx.respond(on_afk)
 
-    def back_check(event):
+    async def back_check(event):
         if "nick" not in dir(event):
             return
         if "text" in dir(event) and event.text.startswith(command_prefix):
             return
         if event.nick in afked_users.keys():
             del afked_users[event.nick]
-            return bot.send_message(f"@{event.nick} {welcome_back}")
+            return await bot.send_message(f"@{event.nick} {welcome_back}")
 
-    def on_chat(event: hvicorn.ChatPackage):
+    async def on_chat(event: hvicorn.ChatPackage):
         for user in afked_users.items():
             if f"@{user[0]}" in event.text:
-                bot.send_message(
+                await bot.send_message(
                     f"@{event.nick} {afk_tip.format(nick=user[0])}"
                     + (" " + reason.format(reason=user[1]) if user[1] else "")
                 )

@@ -11,19 +11,19 @@ from hvicorn.utils.json_to_object import json_to_object, verifyNick
 from hvicorn.models.client import CustomRequest
 from hvicorn.bot.optional_features import OptionalFeatures
 from traceback import format_exc
-from logging import debug, warn
+from logging import debug, warning
 
 WS_ADDRESS = "wss://hack.chat/chat-ws"
 
 
-class AsyncCommandContext:
+class CommandContext:
     """
     Represents the context in which a command is executed.
     """
 
     def __init__(
         self,
-        bot: "AsyncBot",
+        bot: "Bot",
         sender: User,
         triggered_via: Literal["chat", "whisper"],
         text: str,
@@ -41,7 +41,7 @@ class AsyncCommandContext:
             args (str): The arguments passed to the command.
             event (Union[WhisperPackage, ChatPackage]): The event that triggered the command.
         """
-        self.bot: "AsyncBot" = bot
+        self.bot: "Bot" = bot
         self.sender: User = sender
         self.triggered_via: Literal["chat", "whisper"] = triggered_via
         self.text: str = text
@@ -63,10 +63,10 @@ class AsyncCommandContext:
         elif self.triggered_via == "whisper":
             await self.bot.whisper(self.sender.nick, text)
         else:
-            warn("Unknown trigger method, ignoring")
+            warning("Unknown trigger method, ignoring")
 
 
-class AsyncBot:
+class Bot:
     """
     Represents a hack.chat bot.
     """
@@ -107,7 +107,7 @@ class AsyncBot:
             try:
                 data = model.model_dump()
             except:
-                warn(f"Cannot stringify model, ignoring: {model}")
+                warning(f"Cannot stringify model, ignoring: {model}")
                 return
             payload = {}
             for k, v in data.items():
@@ -117,7 +117,7 @@ class AsyncBot:
             debug(f"Sent payload: {payload}")
             await self.websocket.send(dumps(payload))
         else:
-            warn(f"Websocket isn't open, ignoring: {model}")
+            warning(f"Websocket isn't open, ignoring: {model}")
 
     def get_users_by(
         self,
@@ -233,7 +233,7 @@ class AsyncBot:
                         if not user:
                             raise RuntimeError("User not found")
                         await command[1](
-                            AsyncCommandContext(
+                            CommandContext(
                                 self,
                                 user,
                                 "chat",
@@ -247,7 +247,7 @@ class AsyncBot:
                             )
                         )
                     except:
-                        warn(f"Ignoring exception in command: \n{format_exc()}")
+                        warning(f"Ignoring exception in command: \n{format_exc()}")
         if isinstance(event, WhisperPackage):
             for command in self.commands.items():
                 if (
@@ -259,7 +259,7 @@ class AsyncBot:
                         if not user:
                             raise RuntimeError("User not found")
                         await command[1](
-                            AsyncCommandContext(
+                            CommandContext(
                                 self,
                                 user,
                                 "whisper",
@@ -273,7 +273,7 @@ class AsyncBot:
                             )
                         )
                     except:
-                        warn(f"Ignoring exception in command: \n{format_exc()}")
+                        warning(f"Ignoring exception in command: \n{format_exc()}")
         if isinstance(event, UpdateUserPackage):
             if not event.nick:
                 return
@@ -298,7 +298,7 @@ class AsyncBot:
             debug(
                 f"Connecting to wss://104.131.138.176/chat-ws instead of wss://hack.chat/chat-ws to bypass GFW DNS poisoning"
             )
-            warn(
+            warning(
                 f"Enabling bypass_gfw_dns_poisoning can bypass GFW's DNS poisoning, but this can cause man-in-the-middle attacks."
             )
             insecure_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -331,7 +331,7 @@ class AsyncBot:
                 else:
                     function(*args)
             except:
-                warn(f"Ignoring exception in event: \n{format_exc()}")
+                warning(f"Ignoring exception in event: \n{format_exc()}")
 
     async def join(self) -> None:
         """
@@ -344,7 +344,7 @@ class AsyncBot:
         await asyncio.sleep(1)
         debug(f"Done!")
 
-    async def send_message(self, text, editable=False) -> AsyncMessage:
+    async def send_message(self, text, editable=False) -> Message:
         """
         Send a message to the channel.
 
@@ -358,7 +358,7 @@ class AsyncBot:
         customId = generate_customid() if editable else None
         await self._send_model(ChatRequest(text=text, customId=customId))
 
-        msg = AsyncMessage(text, customId)
+        msg = Message(text, customId)
 
         async def wrapper(*args, **kwargs):
             await self._send_model(msg._generate_edit_request(*args, **kwargs))
@@ -466,7 +466,7 @@ class AsyncBot:
     def command(
         self, prefix: str
     ) -> Callable[
-        [Callable[[AsyncCommandContext], Any]], Callable[[AsyncCommandContext], Any]
+        [Callable[[CommandContext], Any]], Callable[[CommandContext], Any]
     ]:
         """
         Decorator for registering command handlers.
@@ -478,9 +478,9 @@ class AsyncBot:
             Callable[[Callable[[CommandContext], Any]], Callable[[CommandContext], Any]]: A decorator function.
         """
 
-        def wrapper(func: Callable[[AsyncCommandContext], Any]):
+        def wrapper(func: Callable[[CommandContext], Any]):
             if prefix in self.commands.keys():
-                warn(
+                warning(
                     f"Overriding function {self.commands[prefix]} for command prefix {prefix}"
                 )
             self.commands[prefix] = func
@@ -531,7 +531,7 @@ class AsyncBot:
             function (Callable): The function to handle the command.
         """
         if prefix in self.commands.keys():
-            warn(
+            warning(
                 f"Overriding function {self.commands[prefix]} for command prefix {prefix}"
             )
         self.commands[prefix] = function
@@ -649,7 +649,7 @@ class AsyncBot:
                         event = json_to_object(package_dict)
                     except Exception as e:
                         debug(e)
-                        warn(
+                        warning(
                             f"Failed to parse event, ignoring: {package_dict} cause exception: \n{format_exc()}"
                         )
                         continue

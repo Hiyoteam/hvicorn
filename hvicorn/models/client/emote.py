@@ -1,6 +1,7 @@
+from typing import Literal
 from pydantic import BaseModel
 
 
 class EmoteRequest(BaseModel):
-    cmd: str = "emote"
+    cmd: Literal['emote'] = "emote"
     text: str

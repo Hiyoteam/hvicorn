@@ -3,7 +3,7 @@ from typing import Optional, Literal
 
 
 class UpdateMessageRequest(BaseModel):
-    cmd: str = "updateMessage"
+    cmd: Literal['updateMessage'] = "updateMessage"
     customId: str
     mode: Literal["overwrite", "prepend", "append", "complete"]
     text: Optional[str] = None

@@ -1,6 +1,7 @@
+from typing import Literal
 from pydantic import BaseModel
 
 
 class ChangeNickRequest(BaseModel):
-    cmd: str = "changenick"
+    cmd: Literal['changenick'] = "changenick"
     nick: str

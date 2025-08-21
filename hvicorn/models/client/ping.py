@@ -1,5 +1,6 @@
+from typing import Literal
 from pydantic import BaseModel
 
 
 class PingRequest(BaseModel):
-    cmd: str = "ping"
+    cmd: Literal['ping'] = "ping"

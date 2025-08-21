@@ -135,6 +135,6 @@ class Message:
 
 
 class ChatRequest(BaseModel):
-    cmd: str = "chat"
+    cmd: Literal["chat"] = "chat"
     text: str
     customId: Optional[str] = None

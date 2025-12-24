@@ -63,7 +63,7 @@ async def execute(ctx: CommandContext):
         return await ctx.respond("I wouldn't do that...")
     try:
         exec(ctx.text.split(" ", 2)[2], globals())
-    except:
+    except Exception:
         traceback.print_exc()
     return await ctx.respond("Done! check console!")
 

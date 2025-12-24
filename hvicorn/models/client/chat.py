@@ -43,11 +43,11 @@ class Message:
             SyntaxError: If the message isn't editable or if customId is missing.
         """
         if not self.editable:
-            raise SyntaxError("This message isn't editable.")
+            raise RuntimeError("This message isn't editable.")
         if self.customId:
             return UpdateMessageRequest(customId=self.customId, mode=mode, text=text)
         else:
-            raise SyntaxError("Missing customId")
+            raise RuntimeError("Missing customId")
 
     async def _edit(
         self, mode: Literal["overwrite", "prepend", "append", "complete"], text: str

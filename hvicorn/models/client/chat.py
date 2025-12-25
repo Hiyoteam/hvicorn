@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, Literal
 from hvicorn.models.client.update_message import UpdateMessageRequest
 from asyncio import run
+from warnings import warn
 
 
 class Message:
@@ -24,7 +25,7 @@ class Message:
         """
         self.text = text
         self.customId = customId
-        self.editable = customId != None
+        self.editable = customId is not None
 
     def _generate_edit_request(
         self, mode: Literal["overwrite", "prepend", "append", "complete"], text: str
@@ -117,6 +118,7 @@ class Message:
         Returns:
             Message: The updated Message instance.
         """
+        warn(DeprecationWarning("The __add__ method starts a new event loop and is not considered best practice. Will be removed in a future release."))
         run(self.append(string))
         return self
 
@@ -130,6 +132,7 @@ class Message:
         Returns:
             Message: The updated Message instance.
         """
+        warn(DeprecationWarning("The __radd__ method starts a new event loop and is not considered best practice. Will be removed in a future release."))
         run(self.prepend(string))
         return self
 

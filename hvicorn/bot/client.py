@@ -71,7 +71,7 @@ class Bot:
     Represents a hack.chat bot.
     """
 
-    def __init__(self, nick: str, channel: str, password: Optional[str] = None) -> None:
+    def __init__(self, nick: str, channel: str, password: Optional[str] = None, ws_address: Optional[str] = None) -> None:
         """
         Initialize a Bot instance.
 
@@ -79,10 +79,12 @@ class Bot:
             nick (str): The bot's nickname.
             channel (str): The channel to join.
             password (Optional[str], optional): The channel password. Defaults to None.
+            ws_address (Optional[str], optional): 自定义 WebSocket 服务器地址。默认为 None（使用 hack.chat 官方服务器）。
         """
         self.nick = nick
         self.channel = channel
         self.password = password
+        self.ws_address = ws_address or WS_ADDRESS  # WebSocket 服务器地址
         self.websocket: Optional[websockets.WebSocketClientProtocol] = None
         self.startup_functions: List[Callable] = []
         self.event_functions: Dict[Any, List[Callable]] = {
@@ -290,9 +292,9 @@ class Bot:
         """
         Connect to the websocket server.
         """
-        debug(f"Connecting to {WS_ADDRESS}, Websocket options: {self.wsopt}")
+        debug(f"Connecting to {self.ws_address}, Websocket options: {self.wsopt}")
         if (
-            WS_ADDRESS == "wss://hack.chat/chat-ws"
+            self.ws_address == "wss://hack.chat/chat-ws"
             and self.optional_features.bypass_gfw_dns_poisoning
         ):
             debug(
@@ -311,7 +313,7 @@ class Bot:
                 **self.wsopt,
             )
         else:
-            self.websocket = await websockets.connect(WS_ADDRESS, **self.wsopt)
+            self.websocket = await websockets.connect(self.ws_address, **self.wsopt)
         debug(f"Connected!")
 
     async def _run_events(

@@ -93,6 +93,7 @@ class Bot:
         self.users: List[User] = []
         self.commands: Dict[str, Callable] = {}
         self.optional_features: OptionalFeatures = OptionalFeatures()
+        self.loaded_plugins: Dict[str, Dict[str, List]] = {}  # 已加载插件的跟踪信息
 
     async def _send_model(self, model: BaseModel) -> None:
         """
@@ -603,8 +604,59 @@ class Bot:
                     init_function(self, *args, **kwargs)
             except:
                 debug(f"Failed to init plugin {plugin_name}: \n{format_exc()}")
+                return
 
+        # 记录插件加载前的状态
+        commands_before = set(self.commands.keys())
+        event_handlers_before = {k: len(v) for k, v in self.event_functions.items()}
+        
         debug(f"Loaded plugin {plugin_name}")
+        
+        # 记录插件注册的命令和事件处理器（用于卸载）
+        commands_after = set(self.commands.keys())
+        new_commands = list(commands_after - commands_before)
+        
+        new_handlers = {}
+        for event_type, handlers in self.event_functions.items():
+            before_count = event_handlers_before.get(event_type, 0)
+            if len(handlers) > before_count:
+                new_handlers[event_type] = handlers[before_count:]
+        
+        self.loaded_plugins[plugin_name] = {
+            "commands": new_commands,
+            "handlers": new_handlers
+        }
+
+    def unload_plugin(self, plugin_name: str) -> None:
+        """
+        卸载插件，移除其注册的所有命令和事件处理器。
+
+        Args:
+            plugin_name (str): 要卸载的插件名称
+        """
+        if plugin_name not in self.loaded_plugins:
+            debug(f"Plugin {plugin_name} is not loaded, ignoring unload request")
+            return
+        
+        plugin_info = self.loaded_plugins[plugin_name]
+        
+        # 移除插件注册的命令
+        for command in plugin_info["commands"]:
+            if command in self.commands:
+                del self.commands[command]
+                debug(f"Unregistered command: {command}")
+        
+        # 移除插件注册的事件处理器
+        for event_type, handlers in plugin_info["handlers"].items():
+            if event_type in self.event_functions:
+                for handler in handlers:
+                    if handler in self.event_functions[event_type]:
+                        self.event_functions[event_type].remove(handler)
+                        debug(f"Unregistered handler for {event_type}")
+        
+        # 从已加载插件列表中移除
+        del self.loaded_plugins[plugin_name]
+        debug(f"Unloaded plugin {plugin_name}")
 
     async def run(self, ignore_self: bool = True, wsopt: Dict = {}) -> None:
         """

@@ -576,6 +576,10 @@ class Bot:
             *args: Additional positional arguments to pass to the init function.
             **kwargs: Additional keyword arguments to pass to the init function.
         """
+        # 记录插件加载前的状态
+        commands_before = set(self.commands.keys())
+        event_handlers_before = {k: len(v) for k, v in self.event_functions.items()}
+        
         if not init_function:
             try:
                 plugin = __import__(plugin_name)
@@ -605,10 +609,6 @@ class Bot:
             except:
                 debug(f"Failed to init plugin {plugin_name}: \n{format_exc()}")
                 return
-
-        # 记录插件加载前的状态
-        commands_before = set(self.commands.keys())
-        event_handlers_before = {k: len(v) for k, v in self.event_functions.items()}
         
         debug(f"Loaded plugin {plugin_name}")
         

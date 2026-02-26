@@ -294,7 +294,7 @@ class Bot:
         """
         debug(f"Connecting to {self.ws_address}, Websocket options: {self.wsopt}")
         if (
-            self.ws_address == "wss://hack.chat/chat-ws"
+            self.ws_address == WS_ADDRESS
             and self.optional_features.bypass_gfw_dns_poisoning
         ):
             debug(

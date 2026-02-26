@@ -71,7 +71,7 @@ class Bot:
     Represents a hack.chat bot.
     """
 
-    def __init__(self, nick: str, channel: str, password: Optional[str] = None, ws_address: Optional[str] = None) -> None:
+    def __init__(self, nick: str, channel: str, password: Optional[str] = None, custom_ws_address: Optional[str] = None) -> None:
         """
         Initialize a Bot instance.
 
@@ -79,12 +79,12 @@ class Bot:
             nick (str): The bot's nickname.
             channel (str): The channel to join.
             password (Optional[str], optional): The channel password. Defaults to None.
-            ws_address (Optional[str], optional): 自定义 WebSocket 服务器地址。默认为 None（使用 hack.chat 官方服务器）。
+            custom_ws_address (Optional[str], optional): Custom websocket endpoint. Defaults to None(Official server).
         """
         self.nick = nick
         self.channel = channel
         self.password = password
-        self.ws_address = ws_address or WS_ADDRESS  # WebSocket 服务器地址
+        self.ws_address = custom_ws_address or WS_ADDRESS
         self.websocket: Optional[websockets.WebSocketClientProtocol] = None
         self.startup_functions: List[Callable] = []
         self.event_functions: Dict[Any, List[Callable]] = {
